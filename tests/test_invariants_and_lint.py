@@ -46,8 +46,10 @@ class TestCompilerGate(unittest.TestCase):
         nodes, edges = fixture_invalid_task_missing_estimate()
         rep = check_invariants(nodes, edges, fast_fail=False)
         self.assertFalse(rep.ok)
-        self.assertTrue(any(e.code == InvariantCodes.GOAL_WITHOUT_DECOMPOSITION for e in rep.errors))
-
+        self.assertTrue(
+            any(e.code == InvariantCodes.TASK_MISSING_ESTIMATE for e in rep.errors),
+            f"Expected {InvariantCodes.TASK_MISSING_ESTIMATE}. Got: {[e.code for e in rep.errors]}",
+        )
     def test_requires_task_cycle_fails(self):
         nodes, edges = fixture_invalid_requires_task_cycle()
         rep = check_invariants(nodes, edges, fast_fail=False)
