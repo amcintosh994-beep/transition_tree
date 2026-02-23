@@ -1,0 +1,19 @@
+﻿# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite
+*.db
+*.db.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv/
+venv/
+
+# OneDrive metadata (defensive)
+*.tmp
