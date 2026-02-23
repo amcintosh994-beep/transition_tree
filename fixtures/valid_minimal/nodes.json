@@ -1,0 +1,16 @@
+﻿[
+  {
+    "id": "G1",
+    "kind": "GOAL",
+    "text": "Achieve a stable daily routine.",
+    "facets": { "status": "active", "commitment": "decided", "domain": "integration" },
+    "slots": { "is_root": "true" }
+  },
+  {
+    "id": "T1",
+    "kind": "TASK",
+    "text": "Do plan tomorrow morning routine.",
+    "facets": { "status": "active", "est_minutes": 20, "domain": "integration" },
+    "slots": {}
+  }
+]

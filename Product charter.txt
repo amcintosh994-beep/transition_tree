@@ -1,0 +1,82 @@
+# DOCUMENT 1
+# PRODUCT CHARTER
+Magic Transition ToDo Tree (MTTT)
+Version 0.1 - Foundational charter
+
+## 1. Purpose
+Magic Transition ToDo Tree is a local-first planning system designed to externalize executive function for long-horizon transition planning.
+
+It converts vague intentions into a typed, decomposable, structurally coherent use of commitments. It provides:
+
+- semantic decomposition ("sprouting")
+- deterministic structural integrity
+- resumable continuity
+- affectively safe progress tracking
+
+The system is a cognitive prosthetic.
+
+## 2. Primary user
+The primary user is any person navigating gender transition while experiencing executive dysfunction and planning fatigue.
+
+User characteristics:
+
+- Capable of high conceptual rigour
+- Prone to paralysis from ambiguity, overwhelm, or restart cost
+- Benefits from structure but rejects moralizing productivity measures
+- Requires long-term coherence across multiple life-domains
+
+The system is optimized for:
+
+- Longitudinal continuity
+- Restart after disruption
+- Controlled expansion rather than explosion.
+
+## 3. Core Loops
+### 3.1 The sprout loop
+1. User enters an intention (messy natural language allowed)
+2. User clicks "Sprout".
+3. Proposal engine generates typed child nodes
+4. Linter validates and repairs
+5. User accepts/edits/rejects
+6. Canonical status updates
+
+This loop reduces blank-page paralysis.
+
+### 3.2 The resume loop
+1. User opens application
+2. System computes:
+	- unblocked atomic actions
+	- stalled prerequisites
+	- unresolved constraints
+3. System presents smallest viable next move
+4. User acts or refines
+
+This loop reduces restart cost.
+
+### 3.3 The stabilization loop
+1. Node reaches "completed" or "maintenance"
+2. System updates dependency graph
+3. Newly unblocked nodes surface
+4. Progress dashboard updates.
+
+This loop reinforces visible continuity.
+
+## 4. Success criteria
+Version 1 is successful if:
+- You can go from vague thought → actionable subtree in under 60 seconds
+- You can leave for 3 weeks and return without cognitive disorientation
+- The system never requires free-form structural debugging
+- Lint feedback feels supportive, not punitive
+- The tree remains semantically legible months later.
+
+## 5. Anti-goals
+The system must not:
+- Become a generic life planner
+- Allow free-form prose to define canonical state
+- Store ambiguous multi-commitment nodes
+- Rely on probabilistic interpretation at commit-time
+- Use gamification or coercive productivity framing
+- Shame or flag "failures"
+- No ontology sprawl; core kinds remain minimal.
+
+The system is a structural integrator.

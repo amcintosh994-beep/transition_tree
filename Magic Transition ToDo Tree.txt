@@ -1,0 +1,160 @@
+# 0. One-sentence product definition
+A **guided decomposition GUI** for transition planning that turns messy intentions into an actionable, typed ree of small commitments, while a strict compiler layer guarantees the tree stays structurally coherent, stable over time, and safe to resume after disruption.
+
+# 1. The function the tool must satisfy
+## 1.1. Socio-cognitive function
+
+I'm externalizing executive function into a system that:
+
+- converts "vague goals" into **bounded next actions**
+- prevents plan rot by enforcing **semantic and syntactic invariants**
+- supports resumption after lapses by keeping state legible and nonjudgmental
+
+## 1.2 Affective function
+The tool must produce:
+
+- **felt continuity** (I am mid-process, not perpetually restarting)
+- **reduced shame load** (no "you failed" vibes; only "here's the next smallest move")
+- **progress legibility** (movement is visible even when slow)
+
+These are primary requirements, because executive dysfunction makes "plan friction" emotionally expensive.
+
+# 2. Non-negotiable design principles
+## 2.1 "Soft input, hard state"
+
+User input can be messy. Canonical storage cannot be messy.
+
+**Consequence**: every user action that creates/edits nodes passes through an invisible gate:
+
+- propose → lint/normalize → repair or request user choice → commit
+
+## 2.2 The user never sees schema jargon
+THe user sees: "Suggested next steps", "Needs a decision", "Blocked by X".
+The system sees: node types, slot constraints, domain rules, invariants.
+
+## 2.3 Resume-first UX
+The default experience is "what should I do next, given where I last left off?"
+
+# 3. What the tree *is* (conceptual model)
+## 3.1 Tree semantics
+A node is a *single commitment unit* with:
+
+- a type (decision/prerequisite/constraint/resource/action/info-note, etc.)
+- a canonical sentence form (Controlled Natural Language)
+- status metadata (active, stalled, completed, parked)
+- optional typed links (dependency edges)
+
+A branch is a **local narrative**: "Given this decision, these prerequisites, constraints, and actions follow."
+
+## 3.2 "Magic" behaviour
+The magic is *automatic decomposition proposals* plus frictionless acceptance and refinment.
+
+# 4. The strict syntactic stratum
+I want a Controlled Natural Language (CNL) per node type, where each type has:
+
+- required slots
+- allowed verbs/frames
+- a canonical rendering template
+- lint rules that detect ambiguity and force splits when needed
+
+Example (conceptual, not final):
+
+- Decision: <I have decided to {commitment} (scope: {domain/timeframe})
+- Prerequisite: <Requires {precondition} before {dependent_action}>
+- Constraint: <Blocked by {blocker} until {condition}>
+
+**Key property**: nodes remain *decomposable* and *renderable* without reinterpreting free prose.
+
+# 5. The GUI experience
+## 5.1 Primary interaction loop
+
+1. I type a messy intention ("I want to get consistent about voice practice").
+2. I press **Sprout**.
+3. The system shows proposed children as editable chips/cards.
+4. I accept, edit, or reject.
+5. The system commits only what passes the gate.
+
+## 5.2 Focus modes that prevent overwhelm
+- **Branch Focus**: show one subtree; everything else collapsed.
+- **Next Actions**: a queue view that pulls only atomic action nodes that are unblocked.
+- **Stalled/Blocked**: surfaces the minimum set of blockers to resolve
+
+## 5.3 "No punishment" feedback design
+Errors must present as:
+
+- "This needs splitting" (with one-click split suggestions)
+- "This belongs in another domain" (with one-click move)
+- "Missing slot: timeframe" (with a small fill-in field)
+
+Never: red walls of failure text.
+
+# 6. The system architecture that makes this possible.
+# 6.1 Components
+
+- **UI client** (desktop): tree browser, node editor, sprout drawer, dashboards
+- **Core engine** (local): schema, normalizer, renderer, linter, repair orchestrator
+- **Model adapter** (optional): produces proposals only, never canonical state
+
+## 6.2 Determinism and drift resistance
+- canonical IDs, canonical rendering, canonical ordering rules
+- schema versioning with "never edit v1" governance
+- migration scripts when schema changes
+
+This gives me long-term integrity; I can retur montsh later and the corpus still builds.
+
+# 7. Requirements: what must be true for v1 to "work"
+## 7.1 Usability requirements
+- "Create → sprout → accept → next action" must be possible in under a minute.
+- Resuming must take one click ("Continue" lands you in the best next branch).
+- Keyboard-first operation must be viable
+
+## 7.2 Integrity requirements
+- no node enters canonical state unless it passes: type purity, atomicity, domain rules, slot completeness (or explicit "unknown" markers)
+- model output is always treated as untrusted input
+
+## 7.3 Safety requirements (executive dysfunction context)
+- default view emphasizes **smallest next move**
+- supports "parked" and "maintenance mode" states without moralizing
+- progress indicators must be truthful and non-coercive
+
+# 8. Concrete build plan
+## Phase 0: Spec freeze
+Deliverables:
+
+- node type system (final list + definitions + templates)
+- invariant list (what the compiler enforces)
+- UI flows (sprout, accept, repair, resume)
+- success criteria for v1 ("feels relieving", "reduces restart cost")
+
+## Phase 1: GUI skeleton without AI
+Build:
+
+- tree view + node editor + renderer
+- manual add/split/move
+- lint diagnostics inline
+  Outcome: the tool is alreayd useful without "magic".
+
+## Phase 2: Sprout proposals
+Add:
+
+- model proposals in a drawer
+- accept/edit/reject workflow
+- auto-repair loop where safe
+  Outcome: "Magic ToDo" feel arrives without surrendering rigour.
+
+## Phase 3: Resume + dashboards
+Add:
+
+- Next Actions queue
+- Blockers view
+- Stability/maintenance mode
+  Outcome: the tool becomes an integration instrument, not a planner I abandon.
+
+# 9. Square 1 outputs
+To make this plan operational, I need three canonical documents:
+
+**1. Product charter (1-2 pages)**: purpose, users (me), core loops, anti-goals.
+**2. Langauges & types spec**: node types + CNL templates + lint rules
+**3. UI contract**: screens, interactions, states, and what's computed where.
+
+

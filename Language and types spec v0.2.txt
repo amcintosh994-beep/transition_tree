@@ -1,0 +1,282 @@
+# DOCUMENT 2
+# LANGUAGE & TYPES SPEC
+Version 0.2 - Core Kinds + Facets + Edges Model
+
+## 1. Design principles
+	1. Canonical state must be deterministic
+	2. Core node kinds must be mutually exclusive and minimal
+	3. Cross-cutting semnatics ust be modeled as orthogonal facets,				not competing kinds
+	4. Dependencies must be represented as typed edges, not as				standalone psuedo-nodes
+	5. Every node must be decomposable or actionable within the graph
+	6. Free-form prose may be accepted as input but never					defines	canonical state.
+
+## 2. Core node kinds (exclusive)
+Exactly one of the following per node.
+
+### 2.1 TASK
+Definition:
+A session-sized executable link.
+
+Canonical template:
+
+	Do {action}.
+
+Required slots:
+
+- action (concrete, observable behaviour)
+- optional context
+
+Structural constraints:
+
+- Must be performable in one bounded session
+- Must contain one main verb
+- Must not contain conjunction joining independent clasues
+- Must not encode recurrence in canonical text (recurrence is a facet)
+
+Failure mode handling:
+
+- Conjunction detected → auto-split proposal
+- Abstract verb detected ("improve", "become", etc.) → convert to GOAL proposal
+
+### 2.2 GOAL
+Definition:
+A desired state or outcome not directly executable.
+
+Canonical template:
+
+	Achieve {outcome}
+
+Required slots:
+
+- outcome (state description)
+
+Structural constraints:
+
+- Must not be session-executable
+- Must not constrain operational verbs implying immediate execution
+- Must eventually decompose into TASK, QUESTION, or ASSET nodes
+
+Invariant:
+
+- GOAL without children is incomplete and must surface in Resume as "Needs decomposition".
+
+### 2.3 QUESTION
+Definition:
+A resolvable unknown.
+
+Canonical template:
+
+	Determine {unknown}
+
+Required slots:
+
+- unknown (concrete, answerable question)
+
+Structural constraints:
+
+- Must be resolvable
+- Must discharge into either
+	- a TASK,
+	- a GOAL,
+	- or an ASSET
+
+Invariant:
+- Completed QUESTION must trigger resolution prompt.
+
+### 2.4 ASSET
+Definition:
+A required resource, capability, or access condition.
+
+Canonical template:
+
+	Have {resource}.
+
+Required slots:
+
+- resource (tangible, informational, financial, relational)
+
+Structural constraints:
+
+- Must not encode action
+- Must be referenced by at least one requires_asset edge or be marked international
+
+### 2.5 BLOCKER
+Definition:
+A condition that prevents execution of another node.
+
+Canonical template:
+
+	Blocked by {condition}.
+
+Optional slot:
+
+- clears_when {condition}
+
+Structural constraints:
+
+- Must attach to at least one node via blocked_By edge
+- May be internal or external (encoded via facet)
+
+## 3. Facets (orthogonal, non-exclusive)
+Facets are structured metadata that may apply to any core kind.
+
+They do not define type identity.
+
+### 3.1 Commitment stance
+- tentative
+- decided
+
+Applies to: GOAL, TASK
+
+Replaces "Decision" node type.
+
+### 3.2 Temporal facet
+- one_off
+- recurring {frequency}
+
+Applies to: TASK
+
+Recurrence must not appear in canonical text.
+
+### 3.3 Status
+- active
+- parked
+- completed
+- maintenance_mode
+
+Status does not alter core kind.
+
+### 3.4 Control locus
+- internal
+- external
+
+Primarily for BLOCKER
+
+### 3.5 Domain
+User-defined domain classification
+
+Does not alter structural semantics
+
+## 4. Typed edges (first-class)
+Edges encode relationships between nodes.
+
+They are mandatory for structural reasoning.
+
+### 4.1 requires_task
+A → B
+A cannot execute until  is completed.
+
+Replaces Prerequisite node type.
+
+### 4.2 requires_asset
+A → ASSET
+A cannot execute until asset is satisfied.
+
+### 4.3 blocked_by
+A → BLOCKER
+A is inactive until blocker clears.
+
+### 4.4 answers
+TASK → QUESTION
+TASK resolves QUESTION
+
+### 4.5 decomposes_into
+GOAL → (TASK | QUESTION | ASSET | GOAL)
+
+## 5. Derived behaviours (computed, not stored)
+These are not node kinds, but UI interpretations.
+
+### 5.1 Decision behaviour
+Triggered when:
+
+- GOAL or TASK has commitment_stance = decided
+
+UI displays badge "Decided".
+
+### 5.2 Maintenance behaviour
+Triggered when:
+
+- TASK has temporal = recurring.
+
+Engine may:
+
+- Generate next-occurence instance for Resume
+- Compute stability metrics
+
+### 5.3 Consraint behaviour
+Triggered when:
+
+- Node has blocked_by edge
+
+UI displays as "Blocked".
+
+### 5.4 Prerequisite behaviour
+Triggered when:
+
+- Node has requires_task edge
+
+UI labels dependency as "Requires"
+
+## 6. Atomicity rules (global)
+Applies to canonical text for all kinds:
+
+1. One main verb
+2. No independent clause conjunction
+3. No temporal chaining language
+4. No emotional commentary
+5. No cross-domain logic in canonical text (use edges instead)
+
+Violations must trigger:
+
+- auto-split proposal, or
+- type conversion proposal.
+
+## 7. Proposal engine constraints
+Model may generate:
+
+- Only core valid kinds
+- Valid facet assignments
+- Valid typed edges
+
+Proposals must pass:
+
+- Kind validation
+- Slot completeness
+- Atomicity check
+- Edge consistency check
+- Cycle detection
+
+No proposal enters canonical state without passing lint.
+
+## 8. Graph integrity invariants
+1. No orphan BLOCKER (must block something)
+2. No orphan ASSET unless informational
+3. No GOAL without decomposition (except root)
+4. No TASK with multi-session scope
+5. No cyclic requires_task dependencies
+6. Completed QUESTION must propagate
+
+## 9. Rendering rules
+Canonical rendering must:
+
+- Display core kind icon
+- Display facet badges
+- Display dependency edges
+- Remain deterministic across builds
+- Never render facet metadata inside canonical sentence
+
+## 10. Structural advantages of v0.2
+This model eliminates:
+
+- Decision vs. Action collapse
+- Maintenance vs. Action overlap
+- Constraint vs Prerequisite confusion
+- Resource/prerequisite drift
+- Information dead-ends
+
+It does so by:
+
+- Reducing kind count
+- Moving ambiguity into orthogonal facets
+- Making dependency semantics first-class
+- Computing behavioural labels rather than storing them as types.

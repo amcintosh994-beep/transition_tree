@@ -1,0 +1,3 @@
+[
+  { "src": "N1", "type": "decomposes_into", "dst": "N2" }
+]

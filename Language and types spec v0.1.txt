@@ -1,0 +1,119 @@
+# DOCUMENT 2
+# LANGUAGE & TYPES SPEC
+Version 0.1 - Controlled Natural Language (CNL)
+
+## 1. Design principles
+- Each node expresses exactly one commitment unit
+- Each node has expressly one type
+- Each type has required semantic slots
+- Canonical state must be machine-rendered deterministically
+- Conjunctions implying multiple commitments are disallowed.
+
+## 2. Node types (initial canonical set)
+### 2.1 Decision
+**Purpose**: Establish intentional commitment
+
+**Template**:
+
+	I have decided to {commitment}.
+
+**Required slots**:
+- commitment (verb phrase, actionable)
+- scope (optional: timeframe/domain)
+
+**Lint rules**:
+- Must contain exactly one verb phrase
+- Must not include conjunction ("and", "or") unless with noun phrase
+- Must not contain dependency logic ("if", "when", "after").
+
+### 2.2 Action
+**Purpose**: Atomic executable step
+
+**Template**:
+
+	Execute {specific action}.
+
+**Required slots**:
+- concrete behaviour
+- context if needed
+
+**Lint rules**:
+- Must be performable in one session
+- Must not imply multiple actions
+- Must not be abstract ("improve", "get better at")
+
+### 2.3 Prerequisite
+**Purpose**: Dependency relationship
+
+**Template**:
+	Requires {condition} before {dependent node}.
+
+**Required slots**:
+- condition
+- reference to dependent node
+
+**Lint rules**:
+- Must reference existing node ID
+- Must express only one dependency
+
+### 2.4 Constraint
+**Purpose**: Blocker outside immediate control
+
+**Template**:
+	Blocked by {blocker} until {condition}
+
+**Lint rules**:
+- Must express external or structural limitation
+- Must include "until" clause
+
+### 2.5 Resource
+**Purpose**: Asset required.
+
+**Template**:
+	Requires access to {resource}
+
+**Lint rules**:
+- Must refer to tangible or informational asset
+- Must not encode behaviour
+
+## 2.6 Maintenance
+**Purpose**: Ongoing stabilization practice
+
+**Template**:
+
+	Maintain {practice} at {frequency}
+
+**Lint rules**:
+- Must include explicit frequency
+- Must not encode growth or expansion logic
+
+### 2.7 Information
+**Purpose**: Knowledge acquisition step
+
+**Template**:
+	Determine {specific unknown}.
+
+**Lint rules**:
+- Must describe a resolvable question
+- Must not imply action beyond inquiry
+
+## 3. Atomicity rules
+- One main verb per node
+- No conjunction joining independent clauses
+- No temporal chaining
+- No emotional commentary in canonical text
+
+## 4. Proposal engine rules
+Model may generate:
+- Up to N children (configurable)
+- Only from allowed type set for that domain
+- No free text outside CNL templates.
+
+All proposals must pass lint before presentation.
+
+## 5. Rendering rules
+Canonical rendering must:
+- Preserve template
+- Display node type icon
+- Display status badge
+- Be deterministic across builds

@@ -1,0 +1,84 @@
+# 1. Social transition (name, pronouns, presentation)
+1.1 [active] (capability) Name and pronouns in low-stakes settings
+1.2 [active] (capability) Presentation baseline for everyday errands
+1.2.1 [active] (capability) Ability to use chosen name and pronouns consistently during casual social interactions.
+1.2.2 [active] (resource) Accessible locations for purchasing or obtaining presentation-related items (clothing, makeup, etc).
+1.2.3 [deferred:knowledge] (capability) Skill in applying basic makeup or grooming to reflect desired presentation for errands.
+1.2.4 [active] (constraint) Blocked by presentation must comply with local dress codes and safety considerations for errands environments.
+1.2.5 [active] (prerequisite) Requires acquire clothing and accessories that align with intended everyday presentation style.
+1.3 [active] (capability) Disclosure boundaries and scripts
+
+# 2. Mental health and support infrastructure
+2.1 [active] (maintenance) Crisis plan and decompression routine (ongoing)
+2.1.1 [active] (resource) Access to crisis hotline or emergency contact numbers
+2.1.2 [deferred:knowledge] (decision) I have decided pre-choose safe environments and people for decompression phase
+2.1.3 [active] (prerequisite) Requires identify personal warning signs indicating onset of crisis
+2.1.4 [active] (maintenance) Regularly update crisis plan based on evolving symptoms and feedback (ongoing)
+2.1.5 [active] (capability) Ability to execute grounding and breathing exercises during stress
+2.1.6 [active] (constraint) Blocked by ensure crisis plan complies with medical advice and safety considerations
+2.2 [active] (capability) Support network map
+2.3 [active] (resource) Therapeutic and peer support access pathway
+
+# 3. Medical transition (HRT)
+3.1 [active] (resource) Access pathway: prescriber, labs, pharmacy
+3.1.1 [active] (resource) Pharmacy must stock necessary hormones and related medications reliably for patient use.
+3.1.2 [active] (resource) Laboratory services capable of processing required blood tests for HRT monitoring must be accessible.
+3.1.3 [active] (constraint) Blocked by local regulations must permit the prescription and dispensation of hormones used in HRT.
+3.1.4 [active] (decision) I have decided patient must choose a prescriber willing and knowledgeable about HRT.
+3.1.5 [active] (prerequisite) Requires prescriber must have valid medical license and authority to prescribe HRT medications.
+3.2 [active] (decision) I have decided regimen decision points
+3.3 [active] (maintenance) Monitoring cadence and follow-up logistics (ongoing)
+
+# 4. Voice and communication
+4.1 [active] (maintenance) Practice routine design (ongoing)
+4.1.1 [deferred] (decision) I have decided choose optimal practice frequency balancing improvement and rest
+4.1.2 [active] (constraint) Blocked by ensure availability of practice environment free from distractions
+4.1.3 [active] (prerequisite) Requires define specific practice goals and skills to focus on each session
+4.1.4 [active] (resource) Access to recording devices to review and assess practice performances
+4.1.5 [active] (capability) Ability to create structured schedules allocating regular practice times
+4.1.6 [active] (maintenance) Regularly update and modify practice routines based on progress and feedback (ongoing)
+4.2 [active] (resource) Technique resources and feedback channel
+4.3 [active] (capability) Communication boundaries and misgendering response scripts
+
+# 5. Legal transition
+5.1 [active] (resource) Name change pathway
+5.1.1 [active] (prerequisite) Requires meet jurisdictional residency requirements for filing a name change petition
+5.1.2 [deferred] (decision) I have decided determine whether to file name change petition individually or through a legal representative
+5.1.3 [active] (resource) Access to official court forms required for name change petition submission
+5.1.4 [active] (prerequisite) Requires obtain valid legal identification documents (e.g., birth certificate, driver's license) prior to name change application
+5.1.5 [active] (constraint) Blocked by comply with legal restrictions on names disallowed by jurisdiction (e.g., offensive, fraudulent)
+5.2 [active] (maintenance) ID and document propagation plan (ongoing)
+5.3 [active] (maintenance) Institutional records updates: school, work, banking (ongoing)
+
+# 6. Surgical options
+6.1 [active] (capability) Information-gathering and candidacy criteria
+6.2 [active] (resource) Financial feasibility pathway
+6.3 [active] (resource) Referral and waitlist logistics
+
+# 7. Hair, skin, and ancillary care
+7.1 [active] (maintenance) Low-effort hair routine (ongoing)
+7.1.1 [active] (capability) Ability to wash hair with minimal water and time usage
+7.1.2 [active] (decision) I have decided determination of washing frequency that balances cleanliness and effort
+7.1.3 [active] (prerequisite) Requires identification of hair type and needs to select appropriate routine products
+7.1.4 [active] (resource) Availability of gentle shampoo suitable for daily or frequent use
+7.1.5 [active] (resource) Access to conditioner formulated for low-maintenance hair care
+7.2 [active] (maintenance) Skin care baseline (ongoing)
+7.3 [active] (capability) Body hair management options
+
+# 8. Social, occupational, and safety planning
+8.1 [active] (decision) I have decided workplace disclosure and risk assessment
+8.1.1 [active] (constraint) Blocked by disclosure must comply with privacy regulations and respect employee confidentiality.
+8.1.2 [deferred] (maintenance) Regular updates of risk assessment based on changes in workplace environment or disclosed information. (ongoing)
+8.1.3 [active] (capability) Ability to identify and evaluate potential workplace risks related to disclosed information.
+8.1.4 [active] (resource) Access to relevant workplace health and safety documentation and risk assessment tools.
+8.1.5 [active] (prerequisite) Requires understand company policies and legal requirements regarding workplace disclosure and risk assessment.
+8.2 [active] (resource) Housing and roommate contingency
+8.3 [active] (maintenance) Public safety routines and emergency contacts (ongoing)
+
+# 9. Long-term maintenance and integration
+9.1 [active] (decision) I have decided to sequence transition steps over the next 8 weeks based on sustainability, risk, and budget constraints
+9.1.1 [active] (constraint) Blocked by total budget allocated for the 8-week transition must not be exceeded
+9.1.2 [active] (prerequisite) Requires current sustainability metrics for each transition step must be evaluated before scheduling
+9.1.3 [deferred:knowledge] (maintenance) Process to monitor actual sustainability and risk against planned values during the transition period is established (ongoing)
+9.1.4 [active] (resource) Access to project timeline and resource availability data for the next 8 weeks
+9.1.5 [active] (capability) Ability to estimate risk impact for each transition step within the planning period

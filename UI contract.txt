@@ -1,0 +1,110 @@
+# DOCUMENT 3
+# UI CONTRACT
+Version 0.1 - Interface & computational boundaries
+
+## Screens
+### 1.1 Tree navigator (left pane)
+Displays:
+
+- Domains
+- Node hierarchy
+- Status indicators
+- Collapsible branches
+
+Computed:
+
+- Status propagation (blocked, active, stable)
+- Dependency edges
+
+### 1.2 Node editor (centre pane)
+Contains:
+
+- Structured input fields
+- Canonical preview
+- Inline lint diagnostics
+
+Computed:
+
+- Template rendering
+- Slot completeness check
+- Atomicity validation
+
+### 1.3 Sproud drawer (right pane)
+Displays:
+
+- Proposed children
+- Lint status per proposal
+- Accept/edit/reject controls
+
+Computed:
+
+- Model call
+- Schema validation
+- Repair attempt
+- Diff preview
+
+### 1.4 Resume dashboard
+Displays:
+
+- Smallest unblocked action
+- Stalled prerequisites
+- Active domains
+- Maintenance nodes
+
+Computed:
+
+- Graph traversal
+- Dependency resolution
+- Status filtering
+
+## 2. State model
+Each node stores:
+
+- ID (stable UUID)
+- type
+- canonical text
+- slots (structured)
+- parent ID
+- dependency edges
+- status
+- timestamps
+
+All structural changes pass through:
+
+propose → lint → repair → commit
+
+## 3. Interaction contracts
+### Adding a node
+- User selects type OR enters messy text
+- System proposes type
+- User confirms
+- Lint runs before commit
+
+### Sprouting
+- User clicks Sprout
+- Engine generates typed children
+- Lint auto-repairs where deterministic
+- User selects final set
+- Commit
+
+### Completing a node
+- Status set to "completed"
+- Dependency graph recalculates
+- Newly unblocked nodes surface
+
+## 4. Computational boundaries
+### UI layer
+- Presentation
+- Input capture
+- Proposal display
+
+### Core engine
+- Schema enforcement
+- Lint rules
+- Dependency resolution
+- Deterministic rendering
+- State transitions
+
+### Model adapter
+- Proposal generation only
+- Never canonical state authority

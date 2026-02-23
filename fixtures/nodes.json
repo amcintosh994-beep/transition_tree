@@ -1,0 +1,16 @@
+[
+  {
+    "id": "N1",
+    "kind": "GOAL",
+    "text": "Achieve consistent voice practice.",
+    "facets": { "status": "active", "commitment": "decided", "domain": "voice" },
+    "slots": { "is_root": "true" }
+  },
+  {
+    "id": "N2",
+    "kind": "TASK",
+    "text": "Do practice voice for 15 minutes.",
+    "facets": { "status": "active", "est_minutes": 15, "recurring": true, "frequency": "2x/week", "domain": "voice" },
+    "slots": {}
+  }
+]
