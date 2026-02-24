@@ -30,5 +30,7 @@ class TestResumeStability(unittest.TestCase):
         state2 = compute_ui_state(nodes2, edges2, fast_fail=False)
         pick2 = state2["resume_pick"]
 
-        self.assertEqual(pick1, pick2)
         self.assertIsNotNone(pick1)
+        self.assertEqual(pick1, pick2)
+        self.assertEqual(pick1.node_id, "T2")
+        self.assertEqual(pick1.reason, "Next actionable task")
