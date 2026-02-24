@@ -1,0 +1,40 @@
+[
+  {
+    "facets": {
+      "commitment": "decided",
+      "domain": "integration",
+      "recurring": false,
+      "status": "active"
+    },
+    "id": "G1",
+    "kind": "GOAL",
+    "slots": {
+      "is_root": "true"
+    },
+    "text": "Achieve a stable daily routine."
+  },
+  {
+    "facets": {
+      "domain": "integration",
+      "est_minutes": 20,
+      "recurring": false,
+      "status": "active"
+    },
+    "id": "T1",
+    "kind": "TASK",
+    "slots": {},
+    "text": "Do draft tomorrow morning routine."
+  },
+  {
+    "facets": {
+      "domain": "logistics",
+      "est_minutes": 10,
+      "recurring": false,
+      "status": "active"
+    },
+    "id": "T2",
+    "kind": "TASK",
+    "slots": {},
+    "text": "Do buy a planner notebook."
+  }
+]

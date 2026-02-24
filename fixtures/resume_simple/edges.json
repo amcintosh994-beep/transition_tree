@@ -1,0 +1,12 @@
+[
+  {
+    "dst": "T1",
+    "src": "G1",
+    "type": "decomposes_into"
+  },
+  {
+    "dst": "T2",
+    "src": "G1",
+    "type": "decomposes_into"
+  }
+]
