@@ -1,3 +1,7 @@
-﻿[
-  { "src": "G1", "type": "decomposes_into", "dst": "T1" }
+[
+  {
+    "dst": "T1",
+    "src": "G1",
+    "type": "decomposes_into"
+  }
 ]

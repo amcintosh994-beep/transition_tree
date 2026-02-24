@@ -1,16 +1,28 @@
-﻿[
+[
   {
+    "facets": {
+      "commitment": "decided",
+      "domain": "integration",
+      "recurring": false,
+      "status": "active"
+    },
     "id": "G1",
     "kind": "GOAL",
-    "text": "Achieve a stable daily routine.",
-    "facets": { "status": "active", "commitment": "decided", "domain": "integration" },
-    "slots": { "is_root": "true" }
+    "slots": {
+      "is_root": "true"
+    },
+    "text": "Achieve a stable daily routine."
   },
   {
+    "facets": {
+      "domain": "integration",
+      "est_minutes": 20,
+      "recurring": false,
+      "status": "active"
+    },
     "id": "T1",
     "kind": "TASK",
-    "text": "Do plan tomorrow morning routine.",
-    "facets": { "status": "active", "est_minutes": 20, "domain": "integration" },
-    "slots": {}
+    "slots": {},
+    "text": "Do plan tomorrow morning routine."
   }
 ]
