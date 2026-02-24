@@ -2,7 +2,6 @@
 import sys
 from pathlib import Path
 
-# Make src/ importable without editable install
 _ROOT = Path(__file__).resolve().parent
 _SRC = _ROOT / "src"
 if str(_SRC) not in sys.path:
