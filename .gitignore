@@ -17,3 +17,8 @@ venv/
 
 # OneDrive metadata (defensive)
 *.tmp
+
+# Packaging artifacts
+*.egg-info/
+
+src.*.egg-info
