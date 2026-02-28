@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from .model import Node
-from derived_status import DerivedState
+from .derived_status import DerivedState
 
 
 @dataclass(frozen=True)
@@ -62,4 +62,6 @@ def pick_resume_next(
     if preferred_domain and n.facets.domain == preferred_domain:
         reason = f"Next actionable task in preferred domain: {preferred_domain}"
     return ResumePick(node_id=top, reason=reason)
+
+
 

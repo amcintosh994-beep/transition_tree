@@ -125,3 +125,5 @@ def lint_cnl(nodes: List[Node]) -> List[CnlLintIssue]:
     issues.sort(key=lambda i: (i.node_id, i.code))
     return issues
 
+
+
