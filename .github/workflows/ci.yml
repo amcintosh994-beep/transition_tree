@@ -17,6 +17,7 @@ jobs:
 
       - name: Install (editable)
         run: |
+          python -m pip install -e .
           python -m pip install --upgrade pip
           python -m 
           
@@ -31,3 +32,6 @@ jobs:
       - name: CLI gate (fixture)
         run: |
           python -m mttt.cli check --data-dir fixtures/valid_minimal
+          mttt -h
+          mttt check --data-dir fixtures/valid_minimal
+          mttt normalize --data-dir fixtures/valid_minimal
