@@ -78,5 +78,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     n.set_defaults(func=cmd_normalize)
 
-    args = p.parse_args(argv)
-    return args.func(args)
+
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
