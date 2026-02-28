@@ -35,13 +35,12 @@ jobs:
           python -m mttt.cli check --data-dir fixtures/valid_minimal
           mttt -h
           mttt check --data-dir fixtures/valid_minimal
-          mttt normalize --data-dir fixtures/valid_minimal
           git diff --quiet
-          
+
+      - name: Normalize canonical fixtures (and assert no drift)
+        run: |
+          mttt normalize --data-dir fixtures/valid_minimal
+          git diff --exit-code
+      
       - name: Run tests
               run: python -m unittest -q
-              
-            - name: CLI gate (module + console script)
-              run: |
-                mttt normalize --data-dir fixtures/valid_minimal
-                git diff --exit-code
