@@ -1,10 +1,10 @@
-# resume_ranking.py
+﻿# resume_ranking.py
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-from mttt_model import Node
+from .model import Node
 from derived_status import DerivedState
 
 
@@ -62,3 +62,4 @@ def pick_resume_next(
     if preferred_domain and n.facets.domain == preferred_domain:
         reason = f"Next actionable task in preferred domain: {preferred_domain}"
     return ResumePick(node_id=top, reason=reason)
+

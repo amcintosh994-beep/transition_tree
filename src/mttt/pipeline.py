@@ -1,7 +1,7 @@
 ﻿# pipeline.py
 from __future__ import annotations
 from typing import List, Optional
-from mttt_model import Edge, Node
+from .model import Edge, Node
 from invariants import check_invariants
 from cnl_lint import lint_cnl
 from derived_status import compute_derived_states
@@ -46,3 +46,4 @@ def compute_ui_state(
         "derived": derived,
         "resume_pick": resume_pick,
     }
+

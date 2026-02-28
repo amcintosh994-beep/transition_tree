@@ -1,10 +1,10 @@
-# invariants.py
+﻿# invariants.py
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-from mttt_model import Edge, EdgeType, Kind, Node, Status
+from .model import Edge, EdgeType, Kind, Node, Status
 
 
 @dataclass(frozen=True)
@@ -413,3 +413,4 @@ def check_invariants(
 
     ok = len(errors) == 0
     return InvariantReport(ok=ok, errors=errors, warnings=warns)
+

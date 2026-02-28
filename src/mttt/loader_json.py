@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, List, Tuple
-from mttt_model import (
+from .model import (
     Commitment,
     ControlLocus,
     Edge,
@@ -85,3 +85,4 @@ def load_nodes_edges_from_dir(dir_path: str | Path) -> Tuple[List[Node], List[Ed
     nodes.sort(key=lambda n: n.id)
     edges.sort(key=lambda e: (e.src, e.type.value, e.dst))
     return nodes, edges
+

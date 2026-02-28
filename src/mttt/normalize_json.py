@@ -1,11 +1,11 @@
-# normalize_json.py
+﻿# normalize_json.py
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import List, Tuple
 
-from mttt_model import Edge, Node
+from .model import Edge, Node
 
 
 def _canonicalize_nodes_edges(nodes: List[Node], edges: List[Edge]) -> Tuple[List[Node], List[Edge]]:
@@ -93,3 +93,4 @@ def normalize_dir(dir_path: str | Path) -> None:
 
     nodes, edges = load_nodes_edges_from_dir(dir_path)
     save_nodes_edges_to_dir(dir_path, nodes, edges)
+

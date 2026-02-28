@@ -1,11 +1,11 @@
-# cnl_lint.py
+﻿# cnl_lint.py
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-from mttt_model import Kind, Node
+from .model import Kind, Node
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,7 @@ _PATTERNS: Dict[Kind, re.Pattern[str]] = {
 }
 
 # Global lexical bans (canonical text only)
-# You can tune these later; treat as “guardrail lint,” not moral judgement.
+# You can tune these later; treat as â€œguardrail lint,â€ not moral judgement.
 _FORBIDDEN_CONJ = re.compile(r"\b(and|or)\b", re.IGNORECASE)
 _TEMPORAL = re.compile(r"\b(after|before|when|once|then|until)\b", re.IGNORECASE)
 _EMOTIVE = re.compile(r"\b(feel|feeling|ashamed|guilty|anxious|depressed|hopeless)\b", re.IGNORECASE)
@@ -56,7 +56,7 @@ def lint_cnl(nodes: List[Node]) -> List[CnlLintIssue]:
     for n in sorted(nodes, key=lambda x: x.id):
         txt = n.text
 
-        # Trailing whitespace is a deterministic “diff rot” source
+        # Trailing whitespace is a deterministic â€œdiff rotâ€ source
         if txt != txt.strip():
             issues.append(
                 CnlLintIssue(
@@ -124,3 +124,4 @@ def lint_cnl(nodes: List[Node]) -> List[CnlLintIssue]:
     # Deterministic final ordering
     issues.sort(key=lambda i: (i.node_id, i.code))
     return issues
+
