@@ -21,3 +21,6 @@ venv/
 # Packaging artifacts
 *.egg-info/
 src.*.egg-info
+*.egg-info/
+dist/
+build/
