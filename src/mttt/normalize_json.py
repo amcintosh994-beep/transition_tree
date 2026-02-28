@@ -89,8 +89,11 @@ def normalize_dir(dir_path: str | Path) -> None:
     """
     Load canon and rewrite canon deterministically.
     """
-    from loader_json import load_nodes_edges_from_dir  # local import to avoid cycles
+    from .loader_json import load_nodes_edges_from_dir  # local import to avoid cycles
 
     nodes, edges = load_nodes_edges_from_dir(dir_path)
     save_nodes_edges_to_dir(dir_path, nodes, edges)
+
+
+
 
