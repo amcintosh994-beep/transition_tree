@@ -40,3 +40,4 @@ jobs:
           mttt -h
           mttt check --data-dir fixtures/valid_minimal
           mttt normalize --data-dir fixtures/valid_minimal
+          git diff --quiet
