@@ -20,7 +20,12 @@ jobs:
           python -m pip install -e .
           python -m pip install --upgrade pip
           python -m 
-          
+       
+      - name: Smoke test console script
+        run: |
+          mttt -h
+          mttt check --data-dir fixtures/valid_minimal
+       
       - name: CLI gate (installed entryopint)
         run: |
           mttt check --data-dir fixtures/valid_minimal
