@@ -1,10 +1,10 @@
-# derived_status.py
+﻿# derived_status.py
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
 
-from mttt_model import Edge, EdgeType, Kind, Node, Status
+from .model import Edge, EdgeType, Kind, Node, Status
 
 
 @dataclass(frozen=True)
@@ -120,3 +120,5 @@ def compute_derived_states(nodes: List[Node], edges: List[Edge]) -> Dict[str, De
         )
 
     return out
+
+
