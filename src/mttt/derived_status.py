@@ -1,4 +1,4 @@
-﻿# derived_status.py
+# derived_status.py
 from __future__ import annotations
 
 from dataclasses import dataclass

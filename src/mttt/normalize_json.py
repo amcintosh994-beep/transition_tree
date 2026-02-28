@@ -1,4 +1,4 @@
-﻿# normalize_json.py
+# normalize_json.py
 from __future__ import annotations
 
 import json

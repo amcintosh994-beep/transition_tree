@@ -1,4 +1,4 @@
-﻿# cnl_lint.py
+# cnl_lint.py
 from __future__ import annotations
 
 import re

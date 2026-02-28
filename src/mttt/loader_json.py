@@ -1,4 +1,4 @@
-﻿# loader_json.py
+# loader_json.py
 from __future__ import annotations
 import json
 from pathlib import Path

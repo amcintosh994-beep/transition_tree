@@ -1,4 +1,4 @@
-﻿# resume_ranking.py
+# resume_ranking.py
 from __future__ import annotations
 
 from dataclasses import dataclass

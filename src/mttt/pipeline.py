@@ -1,4 +1,4 @@
-﻿# pipeline.py
+# pipeline.py
 from __future__ import annotations
 from typing import List, Optional
 from .model import Edge, Node

@@ -9,6 +9,12 @@ repos:
 
       - id: assert-no-diff
         name: Assert no git diff after normalization
-        entry: git diff --exit-code
+        entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
+        language: system
+        pass_filenames: false
+
+      - id: reject-utf8-bom
+        name: Reject UTF-8 BOM in tracked text files
+        entry: python scripts/reject_utf8_bom.py
         language: system
         pass_filenames: false
