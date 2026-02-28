@@ -20,3 +20,6 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 # author = [{name="Althea McIntosh"}]
+
+[project.optional-dependencies]
+dev = ["pre-commit>=3.7"]

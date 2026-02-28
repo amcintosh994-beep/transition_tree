@@ -1,0 +1,14 @@
+﻿repos:
+  - repo: local
+    hooks:
+      - id: mttt-normalize-no-drift
+        name: mttt normalize (no drift)
+        language: system
+        pass_filenames: false
+        entry: python -m mttt.cli normalize --data-dir fixtures/valid_minimal
+
+      - id: assert-no-diff
+        name: assert no git diff
+        language: system
+        pass_filenames: false
+        entry: git diff --exit-code

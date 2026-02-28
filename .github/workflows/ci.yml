@@ -30,10 +30,6 @@ jobs:
         run: |
           mttt check --data-dir fixtures/valid_minimal
 
-      - name: Unit tests
-        run: |
-          python -m unittest -q
-
       - name: CLI gate (fixture)
         run: |
           python -m mttt.cli check --data-dir fixtures/valid_minimal
@@ -41,3 +37,11 @@ jobs:
           mttt check --data-dir fixtures/valid_minimal
           mttt normalize --data-dir fixtures/valid_minimal
           git diff --quiet
+          
+      - name: Run tests
+              run: python -m unittest -q
+              
+            - name: CLI gate (module + console script)
+              run: |
+                mttt normalize --data-dir fixtures/valid_minimal
+                git diff --exit-code
