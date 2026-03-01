@@ -6,8 +6,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
-
-from normalize_json import normalize_dir
+from mttt.normalize_json import normalize_dir
 
 
 def sha256_file(path: Path) -> str:

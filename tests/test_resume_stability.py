@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import unittest
 from pathlib import Path
-
-from loader_json import load_nodes_edges_from_dir
-from pipeline import compute_ui_state
+from mttt.loader_json import load_nodes_edges_from_dir
+from mttt.pipeline import compute_ui_state
 
 
 class TestResumeStability(unittest.TestCase):

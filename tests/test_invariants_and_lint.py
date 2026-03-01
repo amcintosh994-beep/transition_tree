@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import unittest
-
-from cnl_lint import lint_cnl, CnlCodes
-from invariants import check_invariants, InvariantCodes
-from derived_status import compute_derived_states
+from mttt.cnl_lint import lint_cnl, CnlCodes
+from mttt.invariants import check_invariants, InvariantCodes
+from mttt.derived_status import compute_derived_states
 
 from .fixtures import (
     fixture_valid_minimal,

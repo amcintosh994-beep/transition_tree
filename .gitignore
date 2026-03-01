@@ -24,3 +24,4 @@ src.*.egg-info
 *.egg-info/
 dist/
 build/
+'nbackup/
