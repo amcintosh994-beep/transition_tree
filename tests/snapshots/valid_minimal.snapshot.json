@@ -1,0 +1,81 @@
+{
+  "edges": [
+    {
+      "dst": "T1",
+      "src": "G1",
+      "type": "decomposes_into"
+    }
+  ],
+  "fixture": "valid_minimal",
+  "nodes": [
+    {
+      "facets": {
+        "commitment": "decided",
+        "domain": "integration",
+        "recurring": false,
+        "status": "active"
+      },
+      "id": "G1",
+      "kind": "GOAL",
+      "slots": {
+        "is_root": "true"
+      },
+      "text": "Achieve a stable daily routine."
+    },
+    {
+      "facets": {
+        "domain": "integration",
+        "est_minutes": 20,
+        "recurring": false,
+        "status": "active"
+      },
+      "id": "T1",
+      "kind": "TASK",
+      "slots": {},
+      "text": "Do plan tomorrow morning routine."
+    }
+  ],
+  "ui_state": {
+    "cnl_issues": [],
+    "derived": {
+      "G1": {
+        "active_blockers": [],
+        "is_actionable_task": false,
+        "is_blocked": false,
+        "is_completed": false,
+        "is_parked": false,
+        "kind": "GOAL",
+        "needs_decomposition": false,
+        "needs_discharge": false,
+        "node_id": "G1",
+        "status": "active",
+        "unsatisfied_requires_asset": [],
+        "unsatisfied_requires_task": []
+      },
+      "T1": {
+        "active_blockers": [],
+        "is_actionable_task": true,
+        "is_blocked": false,
+        "is_completed": false,
+        "is_parked": false,
+        "kind": "TASK",
+        "needs_decomposition": false,
+        "needs_discharge": false,
+        "node_id": "T1",
+        "status": "active",
+        "unsatisfied_requires_asset": [],
+        "unsatisfied_requires_task": []
+      }
+    },
+    "invariants": {
+      "errors": [],
+      "ok": true,
+      "warnings": []
+    },
+    "ok": true,
+    "resume_pick": {
+      "node_id": "T1",
+      "reason": "Next actionable task"
+    }
+  }
+}
