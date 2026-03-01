@@ -6,6 +6,12 @@ repos:
         entry: python scripts/run_normalize_fixture.py
         language: system
         pass_filenames: false
+        
+      - id: assert-only-fixture-diff
+        name: Assert fixture normalization only touches fixtures/valid_minimal
+        entry: python scripts/assert_fixture_only_diff.py
+        language: system
+        pass_filenames: false
 
       - id: assert-no-diff
         name: Assert no git diff after normalization
