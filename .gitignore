@@ -1,4 +1,4 @@
-﻿# Python bytecode
+# Python bytecode
 __pycache__/
 *.pyc
 *.pyo
@@ -25,3 +25,6 @@ src.*.egg-info
 dist/
 build/
 'nbackup/
+
+# local scratch / ad-hoc scripts
+scripts/scratch/
