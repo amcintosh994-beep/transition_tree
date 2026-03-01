@@ -1,6 +1,12 @@
 repos:
   - repo: local
     hooks:
+      - id: assert-clean-tree
+              name: Assert clean working tree before fixture normalization
+              entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
+              language: system
+              pass_filenames: false
+              
       - id: mttt-normalize
         name: MTTT normalize canonical fixtures
         entry: python scripts/run_normalize_fixture.py
