@@ -2,29 +2,25 @@ repos:
   - repo: local
     hooks:
       - id: assert-clean-tree
-              name: Assert clean working tree before fixture normalization
-              entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
-              language: system
-              pass_filenames: false
-              
+        name: Assert clean working tree before fixture normalization
+        entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
+        language: system
+        pass_filenames: false
       - id: mttt-normalize
         name: MTTT normalize canonical fixtures
         entry: python scripts/run_normalize_fixture.py
         language: system
         pass_filenames: false
-        
       - id: assert-only-fixture-diff
         name: Assert fixture normalization only touches fixtures/valid_minimal
         entry: python scripts/assert_fixture_only_diff.py
         language: system
         pass_filenames: false
-
       - id: assert-no-diff
         name: Assert no git diff after normalization
         entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
         language: system
         pass_filenames: false
-
       - id: reject-utf8-bom
         name: Reject UTF-8 BOM in tracked text files
         entry: python scripts/reject_utf8_bom.py
