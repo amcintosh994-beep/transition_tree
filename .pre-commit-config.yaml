@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: mttt-normalize
         name: MTTT normalize canonical fixtures
-        entry: python -m mttt.cli normalize --data-dir fixtures/valid_minimal
+        entry: python scripts/run_normalize_fixture.py
         language: system
         pass_filenames: false
 
