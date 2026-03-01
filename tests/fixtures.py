@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from mttt_model import Commitment, Edge, EdgeType, Facets, Kind, Node, Status
+from mttt.model import Commitment, Edge, EdgeType, Facets, Kind, Node, Status
 
 
 def fixture_valid_minimal() -> Tuple[List[Node], List[Edge]]:
@@ -115,3 +115,4 @@ def fixture_invalid_conjunction_split_needed() -> Tuple[List[Node], List[Edge]]:
     ]
     edges = [Edge(src="G6", type=EdgeType.DECOMPOSES_INTO, dst="T6")]
     return nodes, edges
+
