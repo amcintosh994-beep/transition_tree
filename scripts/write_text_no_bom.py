@@ -6,7 +6,7 @@ def normalize_text(text: str) -> str:
     return text.replace("\r\n", "\n").replace("\r", "\n")
 def rewrite_file(path: Path) -> bool:
     raw = path.read_bytes()
-    # Decode as UTF-8 (strict — fail fast)
+    # Decode as UTF-8 (strict â€” fail fast)
     text = raw.decode("utf-8")
     # Remove BOM character if present (U+FEFF)
     if text.startswith("\ufeff"):
