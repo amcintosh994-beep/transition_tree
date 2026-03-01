@@ -1,0 +1,5 @@
+{
+  "returncode": 2,
+  "stderr": "",
+  "stdout": "INVARIANTS FAILED/n- InvariantError(code='E010', severity='ERROR', node_id=None, edge=('T1', 'decomposes_into', 'G1'), message='decomposes_into src must be GOAL.')/n"
+}
