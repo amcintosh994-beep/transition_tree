@@ -1,4 +1,8 @@
 from __future__ import annotations
+import mttt
+import mttt.io_atomic
+print("MTTT_IMPORT:", mttt.__file__)
+print("IO_ATOMIC_IMPORT:", mttt.io_atomic.__file__)
 
 import subprocess
 import sys

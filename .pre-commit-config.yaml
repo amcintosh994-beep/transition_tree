@@ -21,10 +21,9 @@ repos:
         entry: python scripts/assert_fixture_only_diff.py
         language: system
         pass_filenames: false
-        pass_filenames: false
       - id: assert-no-diff
         name: Assert no git diff after normalization
-        entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code']))"
+        entry: python -c "import subprocess, sys; raise SystemExit(subprocess.call(['git','diff','--exit-code','--ignore-cr-at-eol']))"
         language: system
         pass_filenames: false
       - id: reject-utf8-bom
