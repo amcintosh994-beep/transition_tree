@@ -3,9 +3,21 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from .model import Edge, Node
+from mttt.io_atomic import atomic_write_text
+
+def _write_json_lf(path: Path, obj: Any) -> None:
+    """
+    Deterministic JSON (human-readable):
+      - UTF-8 (no BOM) [atomic_write_text]
+      - LF newlines + trailing newline [atomic_write_text]
+      - sort_keys=True
+      - indent=2
+    """
+    text = json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True)
+    atomic_write_text(Path(path), text)
 
 
 def _canonicalize_nodes_edges(nodes: List[Node], edges: List[Edge]) -> Tuple[List[Node], List[Edge]]:
@@ -55,22 +67,6 @@ def _edge_to_obj(e: Edge) -> dict:
         "type": e.type.value,
         "dst": e.dst,
     }
-
-
-def _write_json_lf(path: Path, obj) -> None:
-    """
-    Deterministic JSON:
-      - UTF-8 (no BOM)
-      - LF newlines
-      - sort_keys=True to prevent key-order drift
-      - indent=2 for human review
-      - trailing newline
-    """
-    text = json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True)
-    # Enforce LF regardless of platform/editor settings
-    text = text.replace("\r\n", "\n").replace("\r", "\n") + "\n"
-    path.write_text(text, encoding="utf-8", newline="\n")
-
 
 def save_nodes_edges_to_dir(dir_path: str | Path, nodes: List[Node], edges: List[Edge]) -> None:
     d = Path(dir_path)
