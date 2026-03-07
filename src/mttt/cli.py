@@ -6,10 +6,8 @@ from pathlib import Path
 from .normalize_json import normalize_dir
 from .pipeline import compute_ui_state
 
-def cmd_check(args: argparse.Namespace) -> int:
-    from pathlib import Path
 
-    from .pipeline import compute_ui_state
+def cmd_check(args: argparse.Namespace) -> int:
     from .state_provider import load_state
 
     loaded = load_state(
@@ -50,10 +48,21 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 0
 
 
-
 def cmd_normalize(args: argparse.Namespace) -> int:
     normalize_dir(Path(args.data_dir))
     print("OK (normalized)")
+    return 0
+
+
+def cmd_append_set_state(args: argparse.Namespace) -> int:
+    from .events import append_set_state_event
+    from .loader_json import load_nodes_edges_from_dir
+
+    data_dir = Path(args.data_dir)
+    nodes, edges = load_nodes_edges_from_dir(data_dir)
+    out_path = append_set_state_event(data_dir, nodes, edges)
+
+    print(f"OK (appended SET_STATE to {out_path})")
     return 0
 
 
@@ -88,8 +97,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     n.set_defaults(func=cmd_normalize)
 
-    return p
+    a = sub.add_parser(
+        "append-set-state",
+        help="Append current snapshot state as one SET_STATE event to events.jsonl",
+    )
+    a.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing canonical state files",
+    )
+    a.set_defaults(func=cmd_append_set_state)
 
+    return p
 
 
 def main(argv: list[str] | None = None) -> int:

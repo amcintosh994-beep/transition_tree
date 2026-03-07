@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import os
+import tempfile
+import time
 import json
-from dataclasses import asdict, dataclass, fields
+from dataclasses import dataclass, fields
+from .normalize_json import _edge_to_obj, _node_to_obj
 from pathlib import Path
 from typing import Any, Iterable, List, Type, TypeVar
+from .loader_json import load_nodes_edges_from_dir
 
 from .model import Edge, Node
 
@@ -71,18 +76,6 @@ def load_events(events_path: Path) -> List[Event]:
     return events
 
 
-def _from_dict(cls: Type[T], obj: Any) -> T:
-    if not isinstance(obj, dict):
-        raise ValueError(f"Expected object for {cls.__name__}, got {type(obj).__name__}")
-
-    allowed = {f.name for f in fields(cls)}
-    extra = set(obj.keys()) - allowed
-    if extra:
-        raise ValueError(f"Unexpected keys for {cls.__name__}: {sorted(extra)}")
-
-    return cls(**obj)
-
-
 def _materialize_set_state_payload(payload: Any) -> MaterializedState:
     if not isinstance(payload, dict):
         raise ValueError("SET_STATE payload must be an object")
@@ -98,10 +91,24 @@ def _materialize_set_state_payload(payload: Any) -> MaterializedState:
     if not isinstance(raw_edges, list):
         raise ValueError("SET_STATE payload 'edges' must be a list")
 
-    nodes = [_from_dict(Node, x) for x in raw_nodes]
-    edges = [_from_dict(Edge, x) for x in raw_edges]
+    with tempfile.TemporaryDirectory(prefix="mttt_replay_") as td:
+        tmp_dir = Path(td)
+
+        (tmp_dir / "nodes.json").write_text(
+            json.dumps(raw_nodes, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        (tmp_dir / "edges.json").write_text(
+            json.dumps(raw_edges, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        nodes, edges = load_nodes_edges_from_dir(tmp_dir)
 
     return MaterializedState(nodes=nodes, edges=edges)
+
 
 
 def replay_events(events: Iterable[Event]) -> MaterializedState:
@@ -133,8 +140,99 @@ def load_and_replay_events(data_dir: Path) -> MaterializedState:
 
 
 def node_to_dict(node: Node) -> dict[str, Any]:
-    return asdict(node)
+    return _node_to_obj(node)
 
 
 def edge_to_dict(edge: Edge) -> dict[str, Any]:
-    return asdict(edge)
+    return _edge_to_obj(edge)
+    
+def _canonical_event_json(event: dict[str, Any]) -> str:
+    return json.dumps(
+        event,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def _atomic_append_line(path: Path, line: str) -> None:
+    """
+    Deterministically append one LF-terminated line to a text file.
+
+    Properties:
+    - UTF-8 (no BOM)
+    - LF-only
+    - append-only semantics
+    - no blank line insertion
+    - file created if missing
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if "\r" in line or "\n" in line:
+        raise ValueError("append line must be a single logical line without embedded newlines")
+
+    existing = ""
+    if path.exists():
+        existing = path.read_text(encoding="utf-8")
+        existing = existing.replace("\r\n", "\n").replace("\r", "\n")
+
+    new_text = existing + line + "\n"
+
+    tmp_dir = str(path.parent)
+    prefix = f".{path.name}.tmp."
+    fd, tmp_name = tempfile.mkstemp(prefix=prefix, dir=tmp_dir, text=True)
+    tmp_path = Path(tmp_name)
+
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(new_text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+
+def make_event(event_type: str, payload: Any, *, ts: int | None = None) -> dict[str, Any]:
+    if not isinstance(event_type, str) or not event_type:
+        raise ValueError("event_type must be a non-empty string")
+
+    if ts is None:
+        ts = int(time.time())
+
+    return {
+        "v": EVENT_SCHEMA_VERSION,
+        "ts": ts,
+        "type": event_type,
+        "payload": payload,
+    }
+
+def append_event(data_dir: Path, event: dict[str, Any]) -> Path:
+    """
+    Append one canonical event to events.jsonl.
+
+    Returns the path written.
+    """
+    if not isinstance(event, dict):
+        raise ValueError("event must be a dict")
+
+    for key in ("v", "ts", "type", "payload"):
+        if key not in event:
+            raise ValueError(f"event missing required key: {key!r}")
+
+    path = Path(data_dir) / EVENTS_FILENAME
+    line = _canonical_event_json(event)
+    _atomic_append_line(path, line)
+    return path
+
+def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge], *, ts: int | None = None) -> Path:
+    payload = {
+        "nodes": [node_to_dict(n) for n in nodes],
+        "edges": [edge_to_dict(e) for e in edges],
+    }
+    event = make_event("SET_STATE", payload, ts=ts)
+    return append_event(data_dir, event)
