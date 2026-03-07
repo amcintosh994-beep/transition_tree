@@ -107,6 +107,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing canonical state files",
     )
     a.set_defaults(func=cmd_append_set_state)
+    
+    m = sub.add_parser(
+        "materialize-events",
+        help="Replay events.jsonl and write canonical nodes.json / edges.json",
+    )
+    m.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    m.set_defaults(func=cmd_materialize_events)
 
     return p
 
@@ -115,6 +126,19 @@ def main(argv: list[str] | None = None) -> int:
     p = build_parser()
     args = p.parse_args(argv)
     return int(args.func(args))
+
+def cmd_materialize_events(args: argparse.Namespace) -> int:
+    from .events import materialize_events_to_dir
+
+    data_dir = Path(args.data_dir)
+    materialized = materialize_events_to_dir(data_dir)
+
+    print(
+        f"OK (materialized {len(materialized.nodes)} nodes, "
+        f"{len(materialized.edges)} edges from events.jsonl)"
+    )
+    return 0
+
 
 
 if __name__ == "__main__":

@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 import time
-import json
 from dataclasses import dataclass, fields
-from .normalize_json import _edge_to_obj, _node_to_obj
 from pathlib import Path
 from typing import Any, Iterable, List, Type, TypeVar
-from .loader_json import load_nodes_edges_from_dir
 
+from .loader_json import load_nodes_edges_from_dir
 from .model import Edge, Node
+from .normalize_json import _edge_to_obj, _node_to_obj, save_nodes_edges_to_dir
 
 
 EVENTS_FILENAME = "events.jsonl"
@@ -236,3 +236,17 @@ def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge],
     }
     event = make_event("SET_STATE", payload, ts=ts)
     return append_event(data_dir, event)
+
+
+def materialize_events_to_dir(data_dir: Path) -> MaterializedState:
+    """
+    Replay events.jsonl and write canonical nodes.json / edges.json
+    into the same directory.
+
+    Returns the materialized typed state.
+    """
+    data_dir = Path(data_dir)
+    materialized = load_and_replay_events(data_dir)
+    save_nodes_edges_to_dir(data_dir, materialized.nodes, materialized.edges)
+    return materialized
+
