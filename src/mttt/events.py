@@ -33,6 +33,46 @@ class MaterializedState:
     edges: List[Edge]
 
 
+def export_event_fixture(
+    source_dir: Path,
+    out_dir: Path,
+    *,
+    ts: int | None = None,
+    include_materialized_snapshot: bool = True,
+) -> Path:
+    """
+    Create a clean event fixture directory from canonical snapshot state.
+
+    Behavior:
+    - load canonical nodes/edges from source_dir
+    - create out_dir if needed
+    - write a single canonical SET_STATE event to out_dir/events.jsonl
+    - optionally materialize canonical nodes.json / edges.json into out_dir
+
+    Returns the output directory path.
+    """
+    source_dir = Path(source_dir)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    nodes, edges = load_nodes_edges_from_dir(source_dir)
+
+    # overwrite events.jsonl with one canonical SET_STATE event
+    payload = {
+        "nodes": [node_to_dict(n) for n in nodes],
+        "edges": [edge_to_dict(e) for e in edges],
+    }
+    event = make_event("SET_STATE", payload, ts=ts)
+    line = _canonical_event_json(event)
+    _atomic_write_text(out_dir / EVENTS_FILENAME, line)
+
+    if include_materialized_snapshot:
+        save_nodes_edges_to_dir(out_dir, nodes, edges)
+
+    return out_dir
+
+
+
 def _parse_event_line(line: str, line_no: int) -> Event:
     try:
         obj = json.loads(line)

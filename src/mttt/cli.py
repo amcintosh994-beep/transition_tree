@@ -66,6 +66,45 @@ def cmd_append_set_state(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_materialize_events(args: argparse.Namespace) -> int:
+    from .events import materialize_events_to_dir
+
+    data_dir = Path(args.data_dir)
+    materialized = materialize_events_to_dir(data_dir)
+
+    print(
+        f"OK (materialized {len(materialized.nodes)} nodes, "
+        f"{len(materialized.edges)} edges from events.jsonl)"
+    )
+    return 0
+
+
+def cmd_compact_events(args: argparse.Namespace) -> int:
+    from .events import compact_events_in_dir
+
+    data_dir = Path(args.data_dir)
+    out_path = compact_events_in_dir(data_dir)
+
+    print(f"OK (compacted events log to {out_path})")
+    return 0
+
+
+def cmd_export_event_fixture(args: argparse.Namespace) -> int:
+    from .events import export_event_fixture
+
+    source_dir = Path(args.source_dir)
+    out_dir = Path(args.out_dir)
+
+    export_event_fixture(
+        source_dir,
+        out_dir,
+        include_materialized_snapshot=not args.events_only,
+    )
+
+    print(f"OK (exported event fixture to {out_dir})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="mttt")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -107,7 +146,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing canonical state files",
     )
     a.set_defaults(func=cmd_append_set_state)
-    
+
     m = sub.add_parser(
         "materialize-events",
         help="Replay events.jsonl and write canonical nodes.json / edges.json",
@@ -130,6 +169,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     k.set_defaults(func=cmd_compact_events)
 
+    x = sub.add_parser(
+        "export-event-fixture",
+        help="Create a canonical event fixture directory from snapshot state",
+    )
+    x.add_argument(
+        "--source-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing canonical snapshot files",
+    )
+    x.add_argument(
+        "--out-dir",
+        required=True,
+        help="Directory to write the event fixture into",
+    )
+    x.add_argument(
+        "--events-only",
+        action="store_true",
+        help="Write only events.jsonl, without materialized nodes.json / edges.json",
+    )
+    x.set_defaults(func=cmd_export_event_fixture)
+
     return p
 
 
@@ -138,30 +198,7 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
     return int(args.func(args))
 
-def cmd_materialize_events(args: argparse.Namespace) -> int:
-    from .events import materialize_events_to_dir
-
-    data_dir = Path(args.data_dir)
-    materialized = materialize_events_to_dir(data_dir)
-
-    print(
-        f"OK (materialized {len(materialized.nodes)} nodes, "
-        f"{len(materialized.edges)} edges from events.jsonl)"
-    )
-    return 0
-
-def cmd_compact_events(args: argparse.Namespace) -> int:
-    from .events import compact_events_in_dir
-
-    data_dir = Path(args.data_dir)
-    out_path = compact_events_in_dir(data_dir)
-
-    print(f"OK (compacted events log to {out_path})")
-    return 0
-
-
-
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
