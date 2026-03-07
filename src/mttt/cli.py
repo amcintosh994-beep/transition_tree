@@ -5,12 +5,21 @@ from pathlib import Path
 
 from .normalize_json import normalize_dir
 from .pipeline import compute_ui_state
-from .loader_json import load_nodes_edges_from_dir
 
 
 def cmd_check(args: argparse.Namespace) -> int:
-    nodes, edges = load_nodes_edges_from_dir(Path(args.data_dir))
-    ui = compute_ui_state(nodes, edges, preferred_domain=args.preferred_domain)
+    from .state_provider import load_state
+
+    loaded = load_state(
+        Path(args.data_dir),
+        regime=args.state_regime,
+    )
+
+    ui = compute_ui_state(
+        loaded.nodes,
+        loaded.edges,
+        preferred_domain=args.preferred_domain,
+    )
 
     inv = ui.get("invariants")
     if inv is not None and not getattr(inv, "ok", True):
@@ -23,7 +32,6 @@ def cmd_check(args: argparse.Namespace) -> int:
     if issues:
         print("CNL LINT FAILED")
         for i in issues:
-            # assume issue has node_id/code/message-like fields; fallback to repr
             node_id = getattr(i, "node_id", None)
             code = getattr(i, "code", None)
             msg = getattr(i, "message", None)
@@ -46,6 +54,57 @@ def cmd_normalize(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_append_set_state(args: argparse.Namespace) -> int:
+    from .events import append_set_state_event
+    from .loader_json import load_nodes_edges_from_dir
+
+    data_dir = Path(args.data_dir)
+    nodes, edges = load_nodes_edges_from_dir(data_dir)
+    out_path = append_set_state_event(data_dir, nodes, edges)
+
+    print(f"OK (appended SET_STATE to {out_path})")
+    return 0
+
+
+def cmd_materialize_events(args: argparse.Namespace) -> int:
+    from .events import materialize_events_to_dir
+
+    data_dir = Path(args.data_dir)
+    materialized = materialize_events_to_dir(data_dir)
+
+    print(
+        f"OK (materialized {len(materialized.nodes)} nodes, "
+        f"{len(materialized.edges)} edges from events.jsonl)"
+    )
+    return 0
+
+
+def cmd_compact_events(args: argparse.Namespace) -> int:
+    from .events import compact_events_in_dir
+
+    data_dir = Path(args.data_dir)
+    out_path = compact_events_in_dir(data_dir)
+
+    print(f"OK (compacted events log to {out_path})")
+    return 0
+
+
+def cmd_export_event_fixture(args: argparse.Namespace) -> int:
+    from .events import export_event_fixture
+
+    source_dir = Path(args.source_dir)
+    out_dir = Path(args.out_dir)
+
+    export_event_fixture(
+        source_dir,
+        out_dir,
+        include_materialized_snapshot=not args.events_only,
+    )
+
+    print(f"OK (exported event fixture to {out_dir})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="mttt")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -54,12 +113,18 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
-        help="Directory containing nodes.json and edges.json",
+        help="Directory containing canonical state files",
     )
     c.add_argument(
         "--preferred-domain",
         default=None,
         help="Optional domain preference for resume ranking",
+    )
+    c.add_argument(
+        "--state-regime",
+        choices=["snapshot", "events"],
+        default="snapshot",
+        help="How authoritative state is acquired",
     )
     c.set_defaults(func=cmd_check)
 
@@ -70,6 +135,60 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing nodes.json and edges.json",
     )
     n.set_defaults(func=cmd_normalize)
+
+    a = sub.add_parser(
+        "append-set-state",
+        help="Append current snapshot state as one SET_STATE event to events.jsonl",
+    )
+    a.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing canonical state files",
+    )
+    a.set_defaults(func=cmd_append_set_state)
+
+    m = sub.add_parser(
+        "materialize-events",
+        help="Replay events.jsonl and write canonical nodes.json / edges.json",
+    )
+    m.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    m.set_defaults(func=cmd_materialize_events)
+
+    k = sub.add_parser(
+        "compact-events",
+        help="Replay events.jsonl and rewrite it as one canonical SET_STATE event",
+    )
+    k.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    k.set_defaults(func=cmd_compact_events)
+
+    x = sub.add_parser(
+        "export-event-fixture",
+        help="Create a canonical event fixture directory from snapshot state",
+    )
+    x.add_argument(
+        "--source-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing canonical snapshot files",
+    )
+    x.add_argument(
+        "--out-dir",
+        required=True,
+        help="Directory to write the event fixture into",
+    )
+    x.add_argument(
+        "--events-only",
+        action="store_true",
+        help="Write only events.jsonl, without materialized nodes.json / edges.json",
+    )
+    x.set_defaults(func=cmd_export_event_fixture)
 
     return p
 
@@ -82,3 +201,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

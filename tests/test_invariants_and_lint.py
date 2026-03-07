@@ -6,7 +6,7 @@ from mttt.cnl_lint import lint_cnl, CnlCodes
 from mttt.invariants import check_invariants, InvariantCodes
 from mttt.derived_status import compute_derived_states
 
-from .fixtures import (
+from tests.fixtures import (
     fixture_valid_minimal,
     fixture_invalid_goal_no_decomp,
     fixture_invalid_task_missing_estimate,
