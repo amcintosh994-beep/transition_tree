@@ -13,7 +13,7 @@ def main() -> int:
         print(f'Missing fixture dir: {fixture}', file=sys.stderr)
         return 2
 
-    cmd = [sys.executable, '-m', 'mttt.cli', 'normalize', '--data-dir', str(fixture)]
+    cmd = [sys.executable, '-m', 'mttt.cli', 'normalize', '--data-dir', "fixtures/valid_minimal"]
     return subprocess.call(cmd, cwd=str(repo))
 
 
