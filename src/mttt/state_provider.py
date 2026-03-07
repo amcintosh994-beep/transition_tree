@@ -40,16 +40,16 @@ class SnapshotStateProvider:
 class EventReplayStateProvider:
     """
     Authoritative state comes from replaying events.jsonl.
-
-    Phase 1A behavior:
-    - fail explicitly
-    - never silently fall back to snapshot mode
     """
 
     def load(self, data_dir: Path) -> LoadedState:
-        raise NotImplementedError(
-            "Event replay provider is not implemented yet. "
-            "Use --state-regime snapshot for now."
+        from .events import load_and_replay_events
+
+        materialized = load_and_replay_events(data_dir)
+        return LoadedState(
+            nodes=materialized.nodes,
+            edges=materialized.edges,
+            provenance="events:events.jsonl",
         )
 
 
