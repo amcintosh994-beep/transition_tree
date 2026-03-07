@@ -109,6 +109,36 @@ def _materialize_set_state_payload(payload: Any) -> MaterializedState:
 
     return MaterializedState(nodes=nodes, edges=edges)
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    """
+    Atomically write UTF-8 text with LF endings and a trailing newline.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    if not text.endswith("\n"):
+        text += "\n"
+
+    tmp_dir = str(path.parent)
+    prefix = f".{path.name}.tmp."
+    fd, tmp_name = tempfile.mkstemp(prefix=prefix, dir=tmp_dir, text=True)
+    tmp_path = Path(tmp_name)
+
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+
+
 
 
 def replay_events(events: Iterable[Event]) -> MaterializedState:
@@ -236,6 +266,27 @@ def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge],
     }
     event = make_event("SET_STATE", payload, ts=ts)
     return append_event(data_dir, event)
+
+def compact_events_in_dir(data_dir: Path, *, ts: int | None = None) -> Path:
+    """
+    Replay events.jsonl and rewrite it as a single canonical SET_STATE event.
+
+    Returns the path written.
+    """
+    data_dir = Path(data_dir)
+    materialized = load_and_replay_events(data_dir)
+
+    payload = {
+        "nodes": [node_to_dict(n) for n in materialized.nodes],
+        "edges": [edge_to_dict(e) for e in materialized.edges],
+    }
+    event = make_event("SET_STATE", payload, ts=ts)
+    line = _canonical_event_json(event)
+
+    path = data_dir / EVENTS_FILENAME
+    _atomic_write_text(path, line)
+    return path
+
 
 
 def materialize_events_to_dir(data_dir: Path) -> MaterializedState:

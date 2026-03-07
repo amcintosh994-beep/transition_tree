@@ -119,6 +119,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     m.set_defaults(func=cmd_materialize_events)
 
+    k = sub.add_parser(
+        "compact-events",
+        help="Replay events.jsonl and rewrite it as one canonical SET_STATE event",
+    )
+    k.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    k.set_defaults(func=cmd_compact_events)
+
     return p
 
 
@@ -138,6 +149,17 @@ def cmd_materialize_events(args: argparse.Namespace) -> int:
         f"{len(materialized.edges)} edges from events.jsonl)"
     )
     return 0
+
+def cmd_compact_events(args: argparse.Namespace) -> int:
+    from .events import compact_events_in_dir
+
+    data_dir = Path(args.data_dir)
+    out_path = compact_events_in_dir(data_dir)
+
+    print(f"OK (compacted events log to {out_path})")
+    return 0
+
+
 
 
 
