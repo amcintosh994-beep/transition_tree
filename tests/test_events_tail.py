@@ -41,6 +41,22 @@ class TestEventsTail(unittest.TestCase):
             self.assertEqual(len(tail), 2)
             self.assertEqual(tail[0]["ts"], 1700000001)
             self.assertEqual(tail[1]["ts"], 1700000002)
+    
+    def test_tail_reports_set_state_payload_sizes(self) -> None:
+        nodes, edges = load_nodes_edges_from_dir(FIXTURE_DIR)
+
+        with tempfile.TemporaryDirectory(prefix="mttt_events_tail_") as td:
+            data_dir = Path(td)
+
+            append_set_state_event(data_dir, nodes, edges, ts=1700000000)
+
+            events_path = data_dir / "events.jsonl"
+            tail = _read_tail_events(events_path, limit=1)
+
+            self.assertEqual(len(tail), 1)
+            self.assertEqual(tail[0]["type"], "SET_STATE")
+            self.assertEqual(len(tail[0]["payload"]["nodes"]), len(nodes))
+            self.assertEqual(len(tail[0]["payload"]["edges"]), len(edges))
 
     def test_tail_handles_limit_larger_than_log(self) -> None:
         nodes, edges = load_nodes_edges_from_dir(FIXTURE_DIR)

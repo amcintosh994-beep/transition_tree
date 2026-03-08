@@ -158,7 +158,16 @@ def cmd_events_tail(args: argparse.Namespace) -> int:
         ts = ev.get("ts", "none")
         event_type = ev.get("type", "unknown")
         version = ev.get("v", "unknown")
-        print(f"[{idx}] ts={ts} type={event_type} v={version}")
+
+        extra = ""
+        if event_type == "SET_STATE":
+            payload = ev.get("payload", {})
+            nodes = payload.get("nodes", [])
+            edges = payload.get("edges", [])
+            if isinstance(nodes, list) and isinstance(edges, list):
+                extra = f" nodes={len(nodes)} edges={len(edges)}"
+
+        print(f"[{idx}] ts={ts} type={event_type} v={version}{extra}")
 
     return 0
 
