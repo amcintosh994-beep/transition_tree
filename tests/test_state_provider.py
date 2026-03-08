@@ -30,3 +30,18 @@ class TestStateProvider(unittest.TestCase):
             self.assertEqual(loaded.regime, "events")
             self.assertEqual(len(loaded.nodes), len(nodes))
             self.assertEqual(len(loaded.edges), len(edges))
+    
+    def test_load_state_events_until_ts_filters_history(self) -> None:
+        nodes, edges = load_nodes_edges_from_dir(FIXTURE_DIR)
+
+        with tempfile.TemporaryDirectory(prefix="mttt_provider_") as td:
+            data_dir = Path(td)
+
+            append_set_state_event(data_dir, nodes, edges, ts=1700000000)
+            append_set_state_event(data_dir, nodes, edges, ts=1700000001)
+
+            loaded = load_state(data_dir, regime="events", until_ts=1700000000)
+            self.assertEqual(loaded.regime, "events")
+            self.assertEqual(len(loaded.nodes), len(nodes))
+            self.assertEqual(len(loaded.edges), len(edges))
+

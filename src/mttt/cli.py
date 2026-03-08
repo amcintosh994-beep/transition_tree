@@ -13,6 +13,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     loaded = load_state(
         Path(args.data_dir),
         regime=args.state_regime,
+        until_ts=args.until_ts,
     )
 
     ui = compute_ui_state(
@@ -150,6 +151,15 @@ def build_parser() -> argparse.ArgumentParser:
             "Authoritative state source: "
             "'snapshot' loads nodes.json/edges.json; "
             "'events' replays events.jsonl."
+        ),
+    )
+    c.add_argument(
+        "--until-ts",
+        type=int,
+        default=None,
+        help=(
+            "For event regime only: replay only events with ts <= this value. "
+             "Ignored in snapshot regime."
         ),
     )
     c.set_defaults(func=cmd_check)

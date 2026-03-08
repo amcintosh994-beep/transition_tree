@@ -19,7 +19,12 @@ class LoadedState:
     regime: StateRegime
 
 
-def load_state(data_dir: Path, regime: StateRegime = "snapshot") -> LoadedState:
+def load_state(
+    data_dir: Path,
+    regime: StateRegime = "snapshot",
+    *,
+    until_ts: int | None = None,
+) -> LoadedState:
     data_dir = Path(data_dir)
 
     if regime == "snapshot":
@@ -27,7 +32,7 @@ def load_state(data_dir: Path, regime: StateRegime = "snapshot") -> LoadedState:
         return LoadedState(nodes=nodes, edges=edges, regime="snapshot")
 
     if regime == "events":
-        materialized = load_and_replay_events(data_dir)
+        materialized = load_and_replay_events(data_dir, until_ts=until_ts)
         return LoadedState(
             nodes=materialized.nodes,
             edges=materialized.edges,
