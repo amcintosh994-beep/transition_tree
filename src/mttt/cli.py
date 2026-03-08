@@ -202,13 +202,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     k = sub.add_parser(
         "compact-events",
-        help="Rewrite events.jsonl to one canonical SET_STATE event",
+        help="Replay events.jsonl to one canonical SET_STATE event",
         description=(
             "Replay event-authoritative state and compact the log to a single "
             "canonical SET_STATE event."
         ),
     )
-    
     k.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
