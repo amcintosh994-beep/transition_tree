@@ -1,10 +1,58 @@
 from __future__ import annotations
+from collections import deque
 
 import argparse
 from pathlib import Path
+import json
+import sys
 
 from .normalize_json import normalize_dir
 from .pipeline import compute_ui_state
+
+EVENTS_FILENAME = "events.jsonl"
+
+
+def cmd_events_head(args):
+    data_dir = Path(args.data_dir)
+    events_path = data_dir / EVENTS_FILENAME
+
+    if not events_path.is_file():
+        print("events.jsonl: missing")
+        return 1
+
+    count = 0
+    first_ts = None
+    last_ts = None
+
+    with events_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+
+            ev = json.loads(line)
+
+            ts = ev.get("ts")
+            if ts is None:
+                continue
+
+            if first_ts is None:
+                first_ts = ts
+
+            last_ts = ts
+            count += 1
+
+    print("events.jsonl: present")
+    print(f"events: {count}")
+
+    if count > 0:
+        print(f"first_event_ts: {first_ts}")
+        print(f"last_event_ts: {last_ts}")
+    else:
+        print("first_event_ts: none")
+        print("last_event_ts: none")
+
+    return 0
 
 
 def cmd_check(args: argparse.Namespace) -> int:
@@ -78,7 +126,46 @@ def cmd_materialize_events(args: argparse.Namespace) -> int:
         f"{len(materialized.edges)} edges from events.jsonl)"
     )
     return 0
-    
+
+def cmd_events_tail(args: argparse.Namespace) -> int:
+    from collections import deque
+    import json
+
+    data_dir = Path(args.data_dir)
+    events_path = data_dir / "events.jsonl"
+
+    if args.limit < 1:
+        print("limit must be >= 1")
+        return 2
+
+    if not events_path.is_file():
+        print("events.jsonl: missing")
+        return 1
+
+    tail = deque(maxlen=args.limit)
+
+    with events_path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line:
+                continue
+            tail.append(json.loads(line))
+
+    print("events.jsonl: present")
+    print(f"showing last {len(tail)} event(s)")
+
+    for idx, ev in enumerate(tail, start=1):
+        ts = ev.get("ts", "none")
+        event_type = ev.get("type", "unknown")
+        version = ev.get("v", "unknown")
+        print(f"[{idx}] ts={ts} type={event_type} v={version}")
+
+    return 0
+
+
+
+
+
 def cmd_replay_summary(args: argparse.Namespace) -> int:
     from .events import replay_summary
 
@@ -163,16 +250,51 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     c.set_defaults(func=cmd_check)
+    
+    h = sub.add_parser(
+        "events-head",
+        help="Show basic information about the events log (count and timestamp range)",
+        description=(
+            "Read events.jsonl and print basic information about the log "
+            "without replaying state."
+        ),
+    )
+    h.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    h.set_defaults(func=cmd_events_head)
+
+    t = sub.add_parser(
+        "events-tail",
+        help="Show the last N events from events.jsonl",
+        description=(
+            "Read events.jsonl and print a compact summary of the last N events "
+            "without replaying state."
+        ),
+    )
+    t.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    t.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum number of trailing events to show",
+    )
+    t.set_defaults(func=cmd_events_tail)
 
     n = sub.add_parser(
         "normalize",
-        help="Rewrite canonical snapshot files determinsitically",
+        help="Rewrite nodes.json/edges.json deterministically",
         description=(
             "Normalize snapshot-authoritative state files "
             "(nodes.json / edges.json) deterministically."
         ),
     )
-    
     n.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -199,11 +321,9 @@ def build_parser() -> argparse.ArgumentParser:
         "materialize-events",
         help="Replay event-authoritative state into snapshot files",
         description=(
-            "Replay event-authoritative state and compact the log to a single "
-            "canonical SET_STATE event."
+            "Replay events.jsonl and write canonical nodes.json / edges.json."
         ),
     )
-    
     m.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -213,7 +333,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     k = sub.add_parser(
         "compact-events",
-        help="Replay events.jsonl to one canonical SET_STATE event",
+        help="Replay events.jsonl and rewrite it as one canonical SET_STATE event",
         description=(
             "Replay event-authoritative state and compact the log to a single "
             "canonical SET_STATE event."
@@ -225,7 +345,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing events.jsonl",
     )
     k.set_defaults(func=cmd_compact_events)
-    
+
     r = sub.add_parser(
         "replay-summary",
         help="Print a compact summary of events.jsonl and replayed end state",
@@ -247,10 +367,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     r.set_defaults(func=cmd_replay_summary)
 
-
     x = sub.add_parser(
         "export-event-fixture",
-        help="Export snapshot state into a canonical event fixture",
+        help="Create a canonical event fixture directory from snapshot state",
         description=(
             "Read canonical snapshot state from source-dir and create an "
             "event-authoritative fixture in out-dir."
