@@ -77,6 +77,20 @@ def cmd_materialize_events(args: argparse.Namespace) -> int:
         f"{len(materialized.edges)} edges from events.jsonl)"
     )
     return 0
+    
+def cmd_replay_summary(args: argparse.Namespace) -> int:
+    from .events import replay_summary
+
+    summary = replay_summary(Path(args.data_dir))
+
+    print(f"events.jsonl: {summary['events_jsonl']}")
+    print(f"events: {summary['events']}")
+    print(f"last_event_ts: {summary['last_event_ts']}")
+    print(f"state_nodes: {summary['state_nodes']}")
+    print(f"state_edges: {summary['state_edges']}")
+    print(f"regime: {summary['regime']}")
+    return 0
+
 
 
 def cmd_compact_events(args: argparse.Namespace) -> int:
@@ -113,7 +127,7 @@ def build_parser() -> argparse.ArgumentParser:
         "check",
         help="Run full compiler gate on authoritative state",
         description=(
-            "Run invariants, lint, and resume selection on atuhoritative state. "
+            "Run invariants, lint, and resume selection on authoritative state. "
             "Authority is selected via --state-regime."
         ),
     )
@@ -201,6 +215,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing events.jsonl",
     )
     k.set_defaults(func=cmd_compact_events)
+    
+    r = sub.add_parser(
+        "replay-summary",
+        help="Print a compact summary of events.jsonl and replayed end state",
+        description=(
+            "Load events.jsonl, replay event-authoritative state, and print a "
+            "small summary of the log and replayed end state."
+        ),
+    )
+    r.add_argument(
+        "--data-dir",
+        default="fixtures/valid_minimal",
+        help="Directory containing events.jsonl",
+    )
+    r.set_defaults(func=cmd_replay_summary)
 
     x = sub.add_parser(
         "export-event-fixture",

@@ -306,6 +306,28 @@ def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge],
     }
     event = make_event("SET_STATE", payload, ts=ts)
     return append_event(data_dir, event)
+    
+def replay_summary(data_dir: Path) -> dict[str, int | str]:
+    """
+    Return a small summary of the event log and replayed end state.
+    """
+    data_dir = Path(data_dir)
+    events_path = data_dir / EVENTS_FILENAME
+
+    events = load_events(events_path)
+    materialized = replay_events(events)
+
+    last_event_ts = events[-1].ts if events else None
+
+    return {
+        "events_jsonl": "present" if events_path.is_file() else "missing",
+        "events": len(events),
+        "last_event_ts": last_event_ts if last_event_ts is not None else "none",
+        "state_nodes": len(materialized.nodes),
+        "state_edges": len(materialized.edges),
+        "regime": "events",
+    }
+
 
 def compact_events_in_dir(data_dir: Path, *, ts: int | None = None) -> Path:
     """
