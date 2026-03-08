@@ -109,7 +109,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="mttt")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    c = sub.add_parser("check", help="Run full compiler gate")
+    c = sub.add_parser(
+        "check",
+        help="Run full compiler gate on authoritative state",
+        description=(
+            "Run invariants, lint, and resume selection on atuhoritative state. "
+            "Authority is selected via --state-regime."
+        ),
+    )
     c.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -124,11 +131,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--state-regime",
         choices=["snapshot", "events"],
         default="snapshot",
-        help="How authoritative state is acquired",
+        help=(
+            "Authoritative state source: "
+            "'snapshot' loads nodes.json/edges.json; "
+            "'events' replays events.jsonl."
+        ),
     )
     c.set_defaults(func=cmd_check)
 
-    n = sub.add_parser("normalize", help="Rewrite nodes.json/edges.json deterministically")
+    n = sub.add_parser(
+        "normalize",
+        help="Rewrite canonical snapshot files determinsitically",
+        description=(
+            "Normalize snapshot-authoritative state files "
+            "(nodes.json / edges.json) deterministically."
+        ),
+    )
+    
     n.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -138,7 +157,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     a = sub.add_parser(
         "append-set-state",
-        help="Append current snapshot state as one SET_STATE event to events.jsonl",
+        help="Append snapshot state as one SET_STATE event",
+        description=(
+            "Read canonical snapshot state from nodes.json / edges.json "
+            "and append one SET_STATE event to events.jsonl."
+        ),
     )
     a.add_argument(
         "--data-dir",
@@ -149,8 +172,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     m = sub.add_parser(
         "materialize-events",
-        help="Replay events.jsonl and write canonical nodes.json / edges.json",
+        help="Replay event-authoritative state into snapshot files",
+        description=(
+            "Replay event-authoritative state and compact the log to a single "
+            "canonical SET_STATE event."
+        ),
     )
+    
     m.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -160,8 +188,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     k = sub.add_parser(
         "compact-events",
-        help="Replay events.jsonl and rewrite it as one canonical SET_STATE event",
+        help="Rewrite events.jsonl to one canonical SET_STATE event",
+        description=(
+            "Replay event-authoritative state and compact the log to a single "
+            "canonical SET_STATE event."
+        ),
     )
+    
     k.add_argument(
         "--data-dir",
         default="fixtures/valid_minimal",
@@ -171,7 +204,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     x = sub.add_parser(
         "export-event-fixture",
-        help="Create a canonical event fixture directory from snapshot state",
+        help="Export snapshot state into a canonical event fixture",
+        description=(
+            "Read canonical snapshot state from source-dir and create an "
+            "event-authoritative fixture in out-dir."
+        ),
     )
     x.add_argument(
         "--source-dir",
