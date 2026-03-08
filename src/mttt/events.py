@@ -203,10 +203,16 @@ def replay_events(events: Iterable[Event]) -> MaterializedState:
     return state
 
 
-def load_and_replay_events(data_dir: Path) -> MaterializedState:
+def load_and_replay_events(data_dir: Path, *, until_ts: int | None = None) -> MaterializedState:
     events_path = data_dir / EVENTS_FILENAME
     events = load_events(events_path)
+    events = _filter_events_until_ts(events, until_ts)
     return replay_events(events)
+
+def _filter_events_until_ts(events: list[Event], until_ts: int | None) -> list[Event]:
+    if until_ts is None:
+        return events
+    return [ev for ev in events if ev.ts <= until_ts]
 
 
 def node_to_dict(node: Node) -> dict[str, Any]:
@@ -307,7 +313,7 @@ def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge],
     event = make_event("SET_STATE", payload, ts=ts)
     return append_event(data_dir, event)
     
-def replay_summary(data_dir: Path) -> dict[str, int | str]:
+def replay_summary(data_dir: Path, *, until_ts: int | None = None) -> dict[str, int | str]:
     """
     Return a small summary of the event log and replayed end state.
     """
@@ -315,6 +321,7 @@ def replay_summary(data_dir: Path) -> dict[str, int | str]:
     events_path = data_dir / EVENTS_FILENAME
 
     events = load_events(events_path)
+    events = _filter_events_until_ts(events, until_ts)
     materialized = replay_events(events)
 
     last_event_ts = events[-1].ts if events else None
@@ -326,6 +333,7 @@ def replay_summary(data_dir: Path) -> dict[str, int | str]:
         "state_nodes": len(materialized.nodes),
         "state_edges": len(materialized.edges),
         "regime": "events",
+        "until_ts": until_ts if until_ts is not None else "none",
     }
 
 

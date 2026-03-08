@@ -81,7 +81,7 @@ def cmd_materialize_events(args: argparse.Namespace) -> int:
 def cmd_replay_summary(args: argparse.Namespace) -> int:
     from .events import replay_summary
 
-    summary = replay_summary(Path(args.data_dir))
+    summary = replay_summary(Path(args.data_dir), until_ts=args.until_ts)
 
     print(f"events.jsonl: {summary['events_jsonl']}")
     print(f"events: {summary['events']}")
@@ -89,6 +89,7 @@ def cmd_replay_summary(args: argparse.Namespace) -> int:
     print(f"state_nodes: {summary['state_nodes']}")
     print(f"state_edges: {summary['state_edges']}")
     print(f"regime: {summary['regime']}")
+    print(f"until_ts: {summary['until_ts']}")
     return 0
 
 
@@ -228,7 +229,14 @@ def build_parser() -> argparse.ArgumentParser:
         default="fixtures/valid_minimal",
         help="Directory containing events.jsonl",
     )
+    r.add_argument(
+        "--until-ts",
+        type=int,
+        default=None,
+        help="Replay only events with ts <= this value",
+    )
     r.set_defaults(func=cmd_replay_summary)
+
 
     x = sub.add_parser(
         "export-event-fixture",
