@@ -203,12 +203,48 @@ def replay_events(events: Iterable[Event]) -> MaterializedState:
     return state
 
 
-def load_and_replay_events(data_dir: Path, *, until_ts: int | None = None) -> MaterializedState:
-    events_path = data_dir / EVENTS_FILENAME
-    events = load_events(events_path)
-    events = _filter_events_until_ts(events, until_ts)
-    return replay_events(events)
+def load_and_replay_events(
+    data_dir: Path,
+    *,
+    until_ts: int | None = None,
+) -> MaterializedState:
+    """
+    Load events.jsonl from data_dir, optionally filter by until_ts,
+    and replay the resulting event stream.
 
+    Provides explicit diagnostics for common operator mistakes.
+    """
+    data_dir = Path(data_dir)
+    events_path = data_dir / EVENTS_FILENAME
+
+    if not events_path.is_file():
+        raise FileNotFoundError(f"Missing events log: {events_path}")
+
+    all_events = load_events(events_path)
+
+    if not all_events:
+        raise ValueError(
+            f"Events log {events_path} is empty; no events to replay"
+        )
+
+    filtered_events = _filter_events_until_ts(all_events, until_ts)
+
+    if not filtered_events:
+        if until_ts is not None:
+            earliest = min(ev.ts for ev in all_events)
+            raise ValueError(
+                f"No events satisfy ts <= {until_ts}; earliest event ts is {earliest}"
+            )
+        raise ValueError(
+            f"Events log {events_path} contains events but none are eligible for replay"
+        )
+
+    if not any(ev.type == "SET_STATE" for ev in filtered_events):
+        raise ValueError(
+            f"Events log {events_path} contains no SET_STATE event eligible for replay"
+        )
+
+    return replay_events(filtered_events)
 def _filter_events_until_ts(events: list[Event], until_ts: int | None) -> list[Event]:
     if until_ts is None:
         return events
