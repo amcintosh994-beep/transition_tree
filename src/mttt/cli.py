@@ -11,13 +11,26 @@ from .pipeline import compute_ui_state
 
 EVENTS_FILENAME = "events.jsonl"
 
+def _print_json(obj: dict) -> None:
+    import json
+    print(json.dumps(obj, ensure_ascii=False, sort_keys=True, indent=2))
 
-def cmd_events_head(args):
+
+def cmd_events_head(args: argparse.Namespace) -> int:
     data_dir = Path(args.data_dir)
-    events_path = data_dir / EVENTS_FILENAME
+    events_path = data_dir / "events.jsonl"
 
     if not events_path.is_file():
-        print("events.jsonl: missing")
+        result = {
+            "events_jsonl": "missing",
+            "events": 0,
+            "first_event_ts": None,
+            "last_event_ts": None,
+        }
+        if args.json:
+            _print_json(result)
+        else:
+            print("events.jsonl: missing")
         return 1
 
     count = 0
@@ -25,14 +38,14 @@ def cmd_events_head(args):
     last_ts = None
 
     with events_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
 
             ev = json.loads(line)
-
             ts = ev.get("ts")
+
             if ts is None:
                 continue
 
@@ -42,15 +55,20 @@ def cmd_events_head(args):
             last_ts = ts
             count += 1
 
-    print("events.jsonl: present")
-    print(f"events: {count}")
+    result = {
+        "events_jsonl": "present",
+        "events": count,
+        "first_event_ts": first_ts,
+        "last_event_ts": last_ts,
+    }
 
-    if count > 0:
-        print(f"first_event_ts: {first_ts}")
-        print(f"last_event_ts: {last_ts}")
+    if args.json:
+        _print_json(result)
     else:
-        print("first_event_ts: none")
-        print("last_event_ts: none")
+        print("events.jsonl: present")
+        print(f"events: {count}")
+        print(f"first_event_ts: {first_ts if first_ts is not None else 'none'}")
+        print(f"last_event_ts: {last_ts if last_ts is not None else 'none'}")
 
     return 0
 
@@ -129,17 +147,27 @@ def cmd_materialize_events(args: argparse.Namespace) -> int:
 
 def cmd_events_tail(args: argparse.Namespace) -> int:
     from collections import deque
-    import json
 
     data_dir = Path(args.data_dir)
     events_path = data_dir / "events.jsonl"
 
     if args.limit < 1:
-        print("limit must be >= 1")
+        if args.json:
+            _print_json({"error": "limit must be >= 1"})
+        else:
+            print("limit must be >= 1")
         return 2
 
     if not events_path.is_file():
-        print("events.jsonl: missing")
+        result = {
+            "events_jsonl": "missing",
+            "showing": 0,
+            "events": [],
+        }
+        if args.json:
+            _print_json(result)
+        else:
+            print("events.jsonl: missing")
         return 1
 
     tail = deque(maxlen=args.limit)
@@ -151,29 +179,48 @@ def cmd_events_tail(args: argparse.Namespace) -> int:
                 continue
             tail.append(json.loads(line))
 
-    print("events.jsonl: present")
-    print(f"showing last {len(tail)} event(s)")
-
-    for idx, ev in enumerate(tail, start=1):
-        ts = ev.get("ts", "none")
+    summaries = []
+    for ev in tail:
+        ts = ev.get("ts", None)
         event_type = ev.get("type", "unknown")
-        version = ev.get("v", "unknown")
+        version = ev.get("v", None)
 
-        extra = ""
+        summary = {
+            "ts": ts,
+            "type": event_type,
+            "v": version,
+        }
+
         if event_type == "SET_STATE":
             payload = ev.get("payload", {})
             nodes = payload.get("nodes", [])
             edges = payload.get("edges", [])
-            if isinstance(nodes, list) and isinstance(edges, list):
-                extra = f" nodes={len(nodes)} edges={len(edges)}"
 
-        print(f"[{idx}] ts={ts} type={event_type} v={version}{extra}")
+            if isinstance(nodes, list):
+                summary["nodes"] = len(nodes)
+            if isinstance(edges, list):
+                summary["edges"] = len(edges)
+
+        summaries.append(summary)
+
+    result = {
+        "events_jsonl": "present",
+        "showing": len(summaries),
+        "events": summaries,
+    }
+
+    if args.json:
+        _print_json(result)
+    else:
+        print("events.jsonl: present")
+        print(f"showing last {len(summaries)} event(s)")
+        for idx, ev in enumerate(summaries, start=1):
+            extra = ""
+            if "nodes" in ev and "edges" in ev:
+                extra = f" nodes={ev['nodes']} edges={ev['edges']}"
+            print(f"[{idx}] ts={ev['ts']} type={ev['type']} v={ev['v']}{extra}")
 
     return 0
-
-
-
-
 
 def cmd_replay_summary(args: argparse.Namespace) -> int:
     from .events import replay_summary
@@ -273,6 +320,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="fixtures/valid_minimal",
         help="Directory containing events.jsonl",
     )
+    h.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON instead of text",
+    )
     h.set_defaults(func=cmd_events_head)
 
     t = sub.add_parser(
@@ -282,6 +334,11 @@ def build_parser() -> argparse.ArgumentParser:
             "Read events.jsonl and print a compact summary of the last N events "
             "without replaying state."
         ),
+    )
+    t.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON instead of text",
     )
     t.add_argument(
         "--data-dir",
