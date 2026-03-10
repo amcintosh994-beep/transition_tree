@@ -73,9 +73,11 @@
       "warnings": []
     },
     "ok": true,
+    "recoverable": false,
     "resume_pick": {
       "node_id": "T1",
       "reason": "Next actionable task"
-    }
+    },
+    "scaffold_proposals": {}
   }
 }

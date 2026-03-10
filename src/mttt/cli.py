@@ -75,6 +75,7 @@ def cmd_events_head(args: argparse.Namespace) -> int:
 
 def cmd_check(args: argparse.Namespace) -> int:
     from .state_provider import load_state
+    from .knowledge.registry import load_knowledge_registry
 
     loaded = load_state(
         Path(args.data_dir),
@@ -82,10 +83,15 @@ def cmd_check(args: argparse.Namespace) -> int:
         until_ts=args.until_ts,
     )
 
+    knowledge_registry = None
+    if args.with_knowledge:
+        knowledge_registry = load_knowledge_registry(Path(args.data_dir))
+
     ui = compute_ui_state(
         loaded.nodes,
         loaded.edges,
         preferred_domain=args.preferred_domain,
+        knowledge_registry=knowledge_registry,
     )
 
     inv = ui.get("invariants")
@@ -93,6 +99,19 @@ def cmd_check(args: argparse.Namespace) -> int:
         print("INVARIANTS FAILED")
         for e in getattr(inv, "errors", []):
             print(f"- {e}")
+
+        proposals = ui.get("scaffold_proposals") or {}
+        if proposals:
+            print("Scaffold proposals:")
+            for goal_id in sorted(proposals.keys()):
+                items = proposals[goal_id]
+                print(f"- {goal_id}: {len(items)} proposal(s)")
+                for p in items:
+                    print(
+                        f"  - {p.scaffold_id}: "
+                        f"{len(p.proposed_nodes)} node(s), "
+                        f"{len(p.proposed_edges)} edge(s)"
+                    )
         return 2
 
     issues = ui.get("cnl_issues") or []
@@ -112,7 +131,21 @@ def cmd_check(args: argparse.Namespace) -> int:
     rp = ui.get("resume_pick")
     if rp is not None:
         print(f"Resume next: {rp!r}")
+
+    proposals = ui.get("scaffold_proposals") or {}
+    if proposals:
+        print("Scaffold proposals:")
+        for goal_id in sorted(proposals.keys()):
+            items = proposals[goal_id]
+            print(f"- {goal_id}: {len(items)} proposal(s)")
+            for p in items:
+                print(
+                    f"  - {p.scaffold_id}: "
+                    f"{len(p.proposed_nodes)} node(s), "
+                    f"{len(p.proposed_edges)} edge(s)"
+                )
     return 0
+
 
 
 def cmd_normalize(args: argparse.Namespace) -> int:
@@ -305,6 +338,14 @@ def build_parser() -> argparse.ArgumentParser:
              "Ignored in snapshot regime."
         ),
     )
+    c.add_argument(
+            "--with-knowledge",
+            action="store_true",
+            help=(
+                "Load knowledge_events.jsonl from data-dir and emit scaffold proposals "
+                "for recoverable decomposition gaps."
+            )
+        )
     c.set_defaults(func=cmd_check)
     
     h = sub.add_parser(

@@ -143,5 +143,6 @@ class TestSemanticSnapshot(unittest.TestCase):
         
 
         expected = SNAPSHOT_PATH.read_text(encoding="utf-8")
+        self.maxDiff = None
         self.assertEqual(expected, actual)
 

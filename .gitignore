@@ -25,6 +25,7 @@ src.*.egg-info
 dist/
 build/
 'nbackup/
+*.patch
 
 # local scratch / ad-hoc scripts
 scripts/scratch/
