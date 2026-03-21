@@ -16,6 +16,8 @@ from .normalize_json import _edge_to_obj, _node_to_obj, save_nodes_edges_to_dir
 EVENTS_FILENAME = "events.jsonl"
 EVENT_SCHEMA_VERSION = 1
 
+APPLY_SCAFFOLD_PROPOSAL = "APPLY_SCAFFOLD_PROPOSAL"
+
 T = TypeVar("T")
 
 
@@ -149,6 +151,38 @@ def _materialize_set_state_payload(payload: Any) -> MaterializedState:
 
     return MaterializedState(nodes=nodes, edges=edges)
 
+def _payload_to_nodes_edges(payload: Any) -> tuple[List[Node], List[Edge]]:
+    if not isinstance(payload, dict):
+        raise ValueError("APPLY_SCAFFOLD_PROPOSAL payload must be an object")
+
+    raw_nodes = payload.get("proposed_nodes", [])
+    raw_edges = payload.get("proposed_edges", [])
+
+    if not isinstance(raw_nodes, list):
+        raise ValueError("APPLY_SCAFFOLD_PROPOSAL payload 'proposed_nodes' must be a list")
+
+    if not isinstance(raw_edges, list):
+        raise ValueError("APPLY_SCAFFOLD_PROPOSAL payload 'proposed_edges' must be a list")
+
+    with tempfile.TemporaryDirectory(prefix="mttt_scaffold_payload_") as td:
+        tmp_dir = Path(td)
+
+        (tmp_dir / "nodes.json").write_text(
+            json.dumps(raw_nodes, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        (tmp_dir / "edges.json").write_text(
+            json.dumps(raw_edges, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        nodes, edges = load_nodes_edges_from_dir(tmp_dir)
+
+    return nodes, edges
+
+
 def _atomic_write_text(path: Path, text: str) -> None:
     """
     Atomically write UTF-8 text with LF endings and a trailing newline.
@@ -185,17 +219,39 @@ def replay_events(events: Iterable[Event]) -> MaterializedState:
     state: MaterializedState | None = None
 
     for ev in events:
-        if ev.v != EVENT_SCHEMA_VERSION:
-            raise ValueError(
-                f"Unsupported event schema version: {ev.v} "
-                f"(expected {EVENT_SCHEMA_VERSION})"
-            )
-
         if ev.type == "SET_STATE":
             state = _materialize_set_state_payload(ev.payload)
             continue
 
+        elif ev.type == APPLY_SCAFFOLD_PROPOSAL:
+            if state is None:
+                raise ValueError("APPLY_SCAFFOLD_PROPOSAL cannot occur before SET_STATE")
+
+            new_nodes, new_edges = _payload_to_nodes_edges(ev.payload)
+
+            
+            existing_node_ids = {n.id for n in state.nodes}
+            for n in new_nodes:
+                if n.id in existing_node_ids:
+                    raise ValueError(f"APPLY_SCAFFOLD_PROPOSAL node id collision: {n.id}")
+                state.nodes.append(n)
+                existing_node_ids.add(n.id)
+
+            existing_edges = {(e.src, e.type.value, e.dst) for e in state.edges}
+            for e in new_edges:
+                key = (e.src, e.type.value, e.dst)
+                if key in existing_edges:
+                    raise ValueError(
+                        f"APPLY_SCAFFOLD_PROPOSAL duplicate edge: "
+                        f"{e.src} {e.type.value} {e.dst}"
+                    )
+                state.edges.append(e)
+                existing_edges.add(key)
+
+            continue
+
         raise ValueError(f"Unknown event type: {ev.type!r}")
+
 
     if state is None:
         raise ValueError("Replay produced no state; events log contained no SET_STATE event")
@@ -341,12 +397,19 @@ def append_event(data_dir: Path, event: dict[str, Any]) -> Path:
     _atomic_append_line(path, line)
     return path
 
-def append_set_state_event(data_dir: Path, nodes: List[Node], edges: List[Edge], *, ts: int | None = None) -> Path:
+def append_apply_scaffold_event(
+    data_dir: Path,
+    nodes: List[Node],
+    edges: List[Edge],
+    *,
+    ts: int | None = None,
+) -> Path:
     payload = {
         "nodes": [node_to_dict(n) for n in nodes],
         "edges": [edge_to_dict(e) for e in edges],
     }
-    event = make_event("SET_STATE", payload, ts=ts)
+
+    event = make_event("APPLY_SCAFFOLD", payload, ts=ts)
     return append_event(data_dir, event)
     
 def replay_summary(data_dir: Path, *, until_ts: int | None = None) -> dict[str, int | str]:
@@ -407,3 +470,43 @@ def materialize_events_to_dir(data_dir: Path) -> MaterializedState:
     save_nodes_edges_to_dir(data_dir, materialized.nodes, materialized.edges)
     return materialized
 
+
+def append_set_state_event(
+    data_dir: Path,
+    nodes: List[Node],
+    edges: List[Edge],
+    *,
+    ts: int | None = None,
+) -> Path:
+    payload = {
+        "nodes": [node_to_dict(n) for n in nodes],
+        "edges": [edge_to_dict(e) for e in edges],
+    }
+    event = make_event("SET_STATE", payload, ts=ts)
+    return append_event(data_dir, event)
+
+
+def append_apply_scaffold_proposal_event(
+    data_dir: Path,
+    *,
+    goal_id: str,
+    scaffold_id: str,
+    source_domain: str,
+    evidence_strength: str,
+    proposed_nodes: List[Node],
+    proposed_edges: List[Edge],
+    ts: int | None = None,
+) -> Path:
+    event = make_event(
+        APPLY_SCAFFOLD_PROPOSAL,
+        {
+            "goal_id": goal_id,
+            "scaffold_id": scaffold_id,
+            "source_domain": source_domain,
+            "evidence_strength": evidence_strength,
+            "proposed_nodes": [node_to_dict(n) for n in proposed_nodes],
+            "proposed_edges": [edge_to_dict(e) for e in proposed_edges],
+        },
+        ts=ts,
+    )
+    return append_event(data_dir, event)

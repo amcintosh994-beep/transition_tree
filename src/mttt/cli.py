@@ -296,6 +296,49 @@ def cmd_export_event_fixture(args: argparse.Namespace) -> int:
     print(f"OK (exported event fixture to {out_dir})")
     return 0
 
+def cmd_apply_scaffold(args: argparse.Namespace) -> int:
+    from .state_provider import load_state
+    from .knowledge.registry import load_knowledge_registry
+    from .knowledge.apply import (
+        resolve_scaffold_application,
+        validate_scaffold_application,
+    )
+    from .events import append_apply_scaffold_proposal_event
+
+    data_dir = Path(args.data_dir)
+
+    loaded = load_state(
+        data_dir,
+        regime=args.state_regime,
+        until_ts=args.until_ts,
+    )
+    knowledge_registry = load_knowledge_registry(data_dir)
+
+    resolved = resolve_scaffold_application(
+        loaded.nodes,
+        goal_id=args.goal_id,
+        scaffold_id=args.scaffold_id,
+        knowledge_registry=knowledge_registry,
+    )
+    validate_scaffold_application(loaded.nodes, loaded.edges, resolved)
+
+    out_path = append_apply_scaffold_proposal_event(
+        data_dir,
+        goal_id=resolved.goal_id,
+        scaffold_id=resolved.scaffold_id,
+        source_domain=resolved.source_domain,
+        evidence_strength=resolved.evidence_strength,
+        proposed_nodes=list(resolved.proposed_nodes),
+        proposed_edges=list(resolved.proposed_edges),
+    )
+
+    print(
+        f"OK (applied scaffold {resolved.scaffold_id} to {resolved.goal_id}: "
+        f"{len(resolved.proposed_nodes)} node(s), "
+        f"{len(resolved.proposed_edges)} edge(s) in {out_path})"
+    )
+    return 0
+
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="mttt")
@@ -452,6 +495,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing events.jsonl",
     )
     k.set_defaults(func=cmd_compact_events)
+    
+    p_apply = sub.add_parser(
+        "apply-scaffold",
+        help="Append authoritative scaffold application event",
+    )
+    p_apply.add_argument(
+        "--data-dir",
+        required=True,
+        help="Directory containing canonical state files",
+    )
+    p_apply.add_argument("--goal-id", required=True)
+    p_apply.add_argument("--scaffold-id", required=True)
+    p_apply.add_argument(
+        "--state-regime",
+        default="snapshot",
+        choices=["snapshot", "events"],
+        help=(
+            "Authoritative state source: 'snapshot' loads nodes.json/edges.json; "
+            "'events' replays events.jsonl."
+        ),
+    )
+    p_apply.set_defaults(func=cmd_apply_scaffold)
 
     r = sub.add_parser(
         "replay-summary",
@@ -506,6 +571,46 @@ def main(argv: list[str] | None = None) -> int:
     p = build_parser()
     args = p.parse_args(argv)
     return int(args.func(args))
+
+def cmd_apply_scaffold(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .state_provider import load_state
+    from .knowledge.registry import load_knowledge_registry
+    from .knowledge.apply import resolve_scaffold_application, validate_scaffold_application
+    from .events import append_apply_scaffold_event
+
+    data_dir = Path(args.data_dir)
+
+    loaded = load_state(
+        data_dir=data_dir,
+        regime=args.state_regime,
+    )
+
+    knowledge_registry = load_knowledge_registry(data_dir)
+
+    resolved = resolve_scaffold_application(
+        loaded.nodes,
+        goal_id=args.goal_id,
+        scaffold_id=args.scaffold_id,
+        knowledge_registry=knowledge_registry,
+    )
+
+    validate_scaffold_application(loaded.nodes, loaded.edges, resolved)
+
+    append_apply_scaffold_event(
+        data_dir=data_dir,
+        nodes=list(resolved.proposed_nodes),
+    edges=list(resolved.proposed_edges),
+    )
+
+    print(
+        f"OK (applied scaffold {resolved.scaffold_id} to {resolved.goal_id}: "
+        f"{len(resolved.proposed_nodes)} nodes, {len(resolved.proposed_edges)} edges)"
+    )
+    return 0
+
+
 
 
 if __name__ == "__main__":

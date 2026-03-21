@@ -12,6 +12,27 @@ KNOWLEDGE_EVENTS_FILENAME = "knowledge_events.jsonl"
 
 KNOWLEDGE_SCAFFOLD_CONFIRMED = "KNOWLEDGE_SCAFFOLD_CONFIRMED"
 
+APPLY_SCAFFOLD_PROPOSAL = "APPLY_SCAFFOLD_PROPOSAL"
+
+def _scaffold_application_payload(
+    *,
+    goal_id: str,
+    scaffold_id: str,
+    source_domain: str,
+    evidence_strength: str,
+    proposed_nodes: list[Node],
+    proposed_edges: list[Edge],
+) -> dict:
+    return {
+        "goal_id": goal_id,
+        "scaffold_id": scaffold_id,
+        "source_domain": source_domain,
+        "evidence_strength": evidence_strength,
+        "proposed_nodes": [_node_to_obj(n) for n in proposed_nodes],
+        "proposed_edges": [_edge_to_obj(e) for e in proposed_edges],
+    }
+
+
 
 def _scaffold_to_payload(scaffold: Scaffold) -> dict:
     return {
@@ -70,6 +91,29 @@ def scaffold_from_payload(payload: dict) -> Scaffold:
         priority=payload.get("priority", 100),
     )
 
+def append_apply_scaffold_proposal_event(
+    data_dir: Path,
+    *,
+    goal_id: str,
+    scaffold_id: str,
+    source_domain: str,
+    evidence_strength: str,
+    proposed_nodes: list[Node],
+    proposed_edges: list[Edge],
+    ts: int | None = None,
+) -> Path:
+    payload = _scaffold_application_payload(
+        goal_id=goal_id,
+        scaffold_id=scaffold_id,
+        source_domain=source_domain,
+        evidence_strength=evidence_strength,
+        proposed_nodes=proposed_nodes,
+        proposed_edges=proposed_edges,
+    )
+    event = make_event(APPLY_SCAFFOLD_PROPOSAL, payload, ts=ts)
+    path = Path(data_dir) / EVENTS_FILENAME
+    _atomic_append_line(path, _canonical_event_json(event))
+    return path
 
 def append_scaffold_confirmed_event(
     data_dir: Path,

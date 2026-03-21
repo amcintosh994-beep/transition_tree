@@ -10,6 +10,8 @@ from .events import (
 )
 from .model import Scaffold
 
+from ..domains import validate_domain
+
 
 @dataclass(frozen=True)
 class KnowledgeRegistry:
@@ -23,6 +25,8 @@ class KnowledgeRegistry:
 
 
 def registry_from_scaffolds(scaffolds: list[Scaffold]) -> KnowledgeRegistry:
+    for s in scaffolds:
+        validate_domain(s.domain, field_name="Scaffold.domain")
     scaffolds_by_id = {s.scaffold_id: s for s in sorted(scaffolds, key=lambda x: x.scaffold_id)}
     domains: dict[str, list[Scaffold]] = {}
     for s in sorted(scaffolds, key=lambda x: (x.domain, x.priority, x.scaffold_id)):
