@@ -125,13 +125,22 @@ try {
     Success "Allow case passed."
 
     Info "Testing blocked case: src-level untracked file should block commit."
-    New-Item -ItemType File -Path $srcProbe | Out-Null
-    git commit --allow-empty -m "hook block probe" 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Fail "Block-probe commit unexpectedly succeeded."
-    }
-    Remove-IfExists $srcProbe
-    Success "Block case passed."
+	New-Item -ItemType File -Path $srcProbe | Out-Null
+
+	$blockOutput = & git commit --allow-empty -m "hook block probe" 2>&1
+	$blockExit = $LASTEXITCODE
+
+	if ($blockExit -eq 0) {
+		Fail "Block-probe commit unexpectedly succeeded."
+	}
+
+	if (-not ($blockOutput -join "`n" | Select-String "Refusing commit because untracked critical files exist")) {
+		Fail "Block-probe commit failed, but not for the expected hook reason."
+	}
+
+	Remove-IfExists $srcProbe
+	Success "Block case passed."
+
 
     Success "Hook cold-state test completed successfully."
 }
