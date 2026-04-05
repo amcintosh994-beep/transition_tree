@@ -71,3 +71,6 @@ Safe to run in CI to prevent drift.
 	python -m unittest -q
 	mttt check --data-dir fixtures/valid_minimal
 	mttt normalize --data-dir fixtures/valid_minimal
+
+After cloning, run:
+.\scripts\install-hooks.ps1
