@@ -1,4 +1,4 @@
-﻿# Default: normalize to LF in repo
+# Default: normalize to LF in repo
 * text=auto eol=lf
 
 # Explicitly LF for source/config
