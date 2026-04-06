@@ -338,6 +338,22 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
         f"{len(resolved.proposed_edges)} edge(s) in {out_path})"
     )
     return 0
+    
+    # reload state and recompute UI
+    loaded2 = load_state(data_dir, regime=args.state_regime)
+    ui2 = compute_ui_state(
+        loaded2.nodes,
+        loaded2.edges,
+        knowledge_registry=knowledge_registry,
+    )
+
+    if ui2.get("recoverable"):
+        print("WARNING: state still recoverable after scaffold application")
+    elif not ui2.get("ok"):
+        print("WARNING: state still invalid after scaffold application")
+    else:
+        print("State is now valid")
+
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -573,20 +589,20 @@ def main(argv: list[str] | None = None) -> int:
     return int(args.func(args))
 
 def cmd_apply_scaffold(args: argparse.Namespace) -> int:
-    from pathlib import Path
-
     from .state_provider import load_state
     from .knowledge.registry import load_knowledge_registry
-    from .knowledge.apply import resolve_scaffold_application, validate_scaffold_application
-    from .events import append_apply_scaffold_event
+    from .knowledge.apply import (
+        resolve_scaffold_application,
+        validate_scaffold_application,
+    )
+    from .events import append_apply_scaffold_proposal_event
 
     data_dir = Path(args.data_dir)
-
     loaded = load_state(
-        data_dir=data_dir,
+        data_dir,
         regime=args.state_regime,
+        until_ts=args.until_ts,
     )
-
     knowledge_registry = load_knowledge_registry(data_dir)
 
     resolved = resolve_scaffold_application(
@@ -598,17 +614,23 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
 
     validate_scaffold_application(loaded.nodes, loaded.edges, resolved)
 
-    append_apply_scaffold_event(
-        data_dir=data_dir,
-        nodes=list(resolved.proposed_nodes),
-    edges=list(resolved.proposed_edges),
+    out_path = append_apply_scaffold_proposal_event(
+        data_dir,
+        goal_id=resolved.goal_id,
+        scaffold_id=resolved.scaffold_id,
+        source_domain=resolved.source_domain,
+        evidence_strength=resolved.evidence_strength,
+        proposed_nodes=list(resolved.proposed_nodes),
+        proposed_edges=list(resolved.proposed_edges),
     )
 
     print(
         f"OK (applied scaffold {resolved.scaffold_id} to {resolved.goal_id}: "
-        f"{len(resolved.proposed_nodes)} nodes, {len(resolved.proposed_edges)} edges)"
+        f"{len(resolved.proposed_nodes)} node(s), "
+        f"{len(resolved.proposed_edges)} edge(s) in {out_path})"
     )
     return 0
+
 
 
 
