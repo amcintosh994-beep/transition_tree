@@ -2,9 +2,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 function Fail([string]$Message) {
-    Write-Host ""
+    Write-Host ''
     Write-Host "ERROR: $Message" -ForegroundColor Red
-    Write-Host ""
+    Write-Host ''
     exit 1
 }
 
@@ -30,14 +30,14 @@ function Restore-BackupFile([string]$BackupPath, [string]$DestPath) {
 
 $repoRoot = git rev-parse --show-toplevel 2>$null
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
-    Fail "This script must be run from inside a Git repository."
+    Fail 'This script must be run from inside a Git repository.'
 }
 
 Set-Location $repoRoot
 
 $gitDir = git rev-parse --git-dir 2>$null
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($gitDir)) {
-    Fail "Unable to resolve .git directory."
+    Fail 'Unable to resolve .git directory.'
 }
 
 $gitDir = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $gitDir))
@@ -61,10 +61,10 @@ $srcProbe = Join-Path $repoRoot 'src/mttt/_hook_src_probe.py'
 $madeAllowCommit = $false
 
 try {
-    Info "Checking working tree state."
+    Info 'Checking working tree state.'
     $statusPorcelain = git status --porcelain=v1
     if ($LASTEXITCODE -ne 0) {
-        Fail "Unable to read git status."
+        Fail 'Unable to read git status.'
     }
 
     if (Test-Path $rootProbe) {
@@ -77,7 +77,7 @@ try {
         Fail "Temporary backup directory already exists: $backupRoot"
     }
 
-    Info "Backing up currently deployed hooks."
+    Info 'Backing up currently deployed hooks.'
     New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
 
     if (Test-Path $deployedWrapper) {
@@ -87,83 +87,83 @@ try {
         Move-Item $deployedPs1 $backupPs1 -Force
     }
 
-    Info "Verifying cold state."
+    Info 'Verifying cold state.'
     if (Test-Path $deployedWrapper) {
-        Fail "Deployed wrapper still exists after backup."
+        Fail 'Deployed wrapper still exists after backup.'
     }
     if (Test-Path $deployedPs1) {
-        Fail "Deployed PowerShell hook still exists after backup."
+        Fail 'Deployed PowerShell hook still exists after backup.'
     }
 
-    Info "Running installer."
-    & "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File $installScript
+    Info 'Running installer.'
+    & 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -NoProfile -ExecutionPolicy Bypass -File $installScript
     if ($LASTEXITCODE -ne 0) {
-        Fail "Hook installer failed."
+        Fail 'Hook installer failed.'
     }
 
-    Info "Verifying deployed hooks were recreated."
+    Info 'Verifying deployed hooks were recreated.'
     if (-not (Test-Path $deployedWrapper)) {
-        Fail "Installer did not recreate .git/hooks/pre-commit"
+        Fail 'Installer did not recreate .git/hooks/pre-commit'
     }
     if (-not (Test-Path $deployedPs1)) {
-        Fail "Installer did not recreate .git/hooks/pre-commit.ps1"
+        Fail 'Installer did not recreate .git/hooks/pre-commit.ps1'
     }
 
-    Info "Testing allowed case: root-level untracked file should not block commit."
+    Info 'Testing allowed case: root-level untracked file should not block commit.'
     New-Item -ItemType File -Path $rootProbe | Out-Null
-    git commit --allow-empty -m "hook allow probe"
+    git commit --allow-empty -m 'hook allow probe'
     if ($LASTEXITCODE -ne 0) {
-        Fail "Allow-probe commit was unexpectedly blocked."
+        Fail 'Allow-probe commit was unexpectedly blocked.'
     }
     $madeAllowCommit = $true
     Remove-IfExists $rootProbe
-    Success "Allow case passed."
+    Success 'Allow case passed.'
 
-    Info "Testing blocked case: src-level untracked file should block commit."
+    Info 'Testing blocked case: src-level untracked file should block commit.'
     New-Item -ItemType File -Path $srcProbe | Out-Null
 
     $blockOutput = cmd.exe /c 'git commit --allow-empty -m "hook block probe" 2>&1'
     $blockExit = $LASTEXITCODE
 
     if ($blockExit -eq 0) {
-        Fail "Block-probe commit unexpectedly succeeded."
+        Fail 'Block-probe commit unexpectedly succeeded.'
     }
 
-    if (-not ($blockOutput -join "`n" | Select-String "Refusing commit because untracked critical files exist")) {
-        Fail "Block-probe commit failed, but not for the expected hook reason."
+    if (-not ($blockOutput -join "`n" | Select-String 'Refusing commit because untracked critical files exist')) {
+        Fail 'Block-probe commit failed, but not for the expected hook reason.'
     }
 
     Remove-IfExists $srcProbe
-    Success "Block case passed."
+    Success 'Block case passed.'
 
-    Success "Hook cold-state test completed successfully."
+    Success 'Hook cold-state test completed successfully.'
 }
 finally {
-    Info "Cleaning up probe files."
+    Info 'Cleaning up probe files.'
     Remove-IfExists $rootProbe
     Remove-IfExists $srcProbe
 
     if ($madeAllowCommit) {
-        Info "Removing temporary allow-probe empty commit."
+        Info 'Removing temporary allow-probe empty commit.'
         git reset --soft HEAD~1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "[WARN] Failed to soft-reset temporary allow-probe commit." -ForegroundColor Yellow
+            Write-Host '[WARN] Failed to soft-reset temporary allow-probe commit.' -ForegroundColor Yellow
         }
         else {
             git restore --staged . | Out-Null
         }
     }
 
-    Info "Restoring original deployed hooks backup if present."
+    Info 'Restoring original deployed hooks backup if present.'
     Remove-IfExists $deployedWrapper
     Remove-IfExists $deployedPs1
     Restore-BackupFile $backupWrapper $deployedWrapper
     Restore-BackupFile $backupPs1 $deployedPs1
 
-    Info "Removing temporary backup directory."
+    Info 'Removing temporary backup directory.'
     Remove-IfExists $backupRoot
 
-    Write-Host ""
+    Write-Host ''
     git status
-    Write-Host ""
+    Write-Host ''
 }
