@@ -9,3 +9,16 @@
 - Installable console script (`mttt`).
 - Deterministic JSON normalization pipeline.
 - CI smoke tests + normalization diff assertion.
+
+## Hook subsystem hardening (2026-04-05)
+
+Introduced a versioned Git hook subsystem to prevent commits that omit critical files.
+
+- Added `tools/hooks/pre-commit.ps1` as the authoritative hook source
+- Added `scripts/install-hooks.ps1` for deterministic deployment into `.git/hooks/`
+- Added `scripts/test-hooks.ps1` for cold-state smoke testing (installer + behavior)
+- Hook enforces invariant: no untracked files under `src/`, `tests/`, or `schema/`
+- Verified installer correctness via cold-state reinstall (no reliance on local hook residue)
+- Cleaned `.gitattributes` (removed BOM) to eliminate parsing warnings
+
+Result: repository now guards against partial commits that would break schema/authority layers.
