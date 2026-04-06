@@ -629,10 +629,22 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
         f"{len(resolved.proposed_nodes)} node(s), "
         f"{len(resolved.proposed_edges)} edge(s) in {out_path})"
     )
+
+    loaded_after = load_state(data_dir, regime="events")
+    ui_after = compute_ui_state(
+        loaded_after.nodes,
+        loaded_after.edges,
+        knowledge_registry=knowledge_registry,
+    )
+
+    if ui_after["recoverable"]:
+        print("WARNING: state still recoverable after scaffold")
+    elif not ui_after["ok"]:
+        print("WARNING: state still invalid after scaffold")
+    else:
+        print("State OK after scaffold")
+
     return 0
-
-
-
 
 
 if __name__ == "__main__":
