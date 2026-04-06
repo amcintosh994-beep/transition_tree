@@ -16,10 +16,6 @@ function Success([string]$Message) {
     Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
-function Normalize-GitPath([string]$Path) {
-    return ($Path -replace '\\', '/').Trim()
-}
-
 function Remove-IfExists([string]$Path) {
     if (Test-Path $Path) {
         Remove-Item $Path -Recurse -Force
@@ -71,7 +67,6 @@ try {
         Fail "Unable to read git status."
     }
 
-    # We allow preexisting modifications, but we refuse to proceed if our own probe/temp paths already exist.
     if (Test-Path $rootProbe) {
         Fail "Probe file already exists: $rootProbe"
     }
@@ -131,15 +126,15 @@ try {
     $blockExit = $LASTEXITCODE
 
     if ($blockExit -eq 0) {
-         Fail "Block-probe commit unexpectedly succeeded."
+        Fail "Block-probe commit unexpectedly succeeded."
     }
 
     if (-not ($blockOutput -join "`n" | Select-String "Refusing commit because untracked critical files exist")) {
-         Fail "Block-probe commit failed, but not for the expected hook reason."
+        Fail "Block-probe commit failed, but not for the expected hook reason."
     }
 
     Remove-IfExists $srcProbe
-    Success "Block case passed.”
+    Success "Block case passed."
 
     Success "Hook cold-state test completed successfully."
 }
@@ -153,7 +148,8 @@ finally {
         git reset --soft HEAD~1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[WARN] Failed to soft-reset temporary allow-probe commit." -ForegroundColor Yellow
-        } else {
+        }
+        else {
             git restore --staged . | Out-Null
         }
     }
@@ -171,4 +167,3 @@ finally {
     git status
     Write-Host ""
 }
-
