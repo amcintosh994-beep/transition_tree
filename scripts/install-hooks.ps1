@@ -45,8 +45,30 @@ if (-not (Test-Path $hooksDir)) {
     New-Item -ItemType Directory -Path $hooksDir -Force | Out-Null
 }
 
+function Get-FileHashSafe([string]$Path) {
+    if (-not (Test-Path $Path)) { return $null }
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash
+}
+
 $destPs1 = Join-Path $hooksDir 'pre-commit.ps1'
-Copy-Item -Path $sourceHook -Destination $destPs1 -Force
+
+$sourceHash = Get-FileHashSafe $sourceHook
+$destHash = Get-FileHashSafe $destPs1
+
+if ($destHash -and $sourceHash -eq $destHash) {
+    Info 'Hook already up to date (no drift detected).'
+}
+else {
+    Copy-Item -Path $sourceHook -Destination $destPs1 -Force
+
+    if ($destHash) {
+        Info 'Hook updated (drift detected and corrected).'
+    }
+    else {
+        Info 'Hook installed (no prior deployment found).'
+    }
+}
+
 
 $wrapperPath = Join-Path $hooksDir 'pre-commit'
 $wrapper = @'
