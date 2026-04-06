@@ -22,3 +22,9 @@ Introduced a versioned Git hook subsystem to prevent commits that omit critical 
 - Cleaned `.gitattributes` (removed BOM) to eliminate parsing warnings
 
 Result: repository now guards against partial commits that would break schema/authority layers.
+
+## Scaffold flow completion
+
+- Add end-to-end CLI test proving that a recoverable GOAL_WITHOUT_DECOMPOSITION -> scaffold application -> event replayed
+- Enforce requirement for SET_STATE baseline before replay
+- Align knowledge registry 
