@@ -63,6 +63,35 @@ $madeAllowCommit = $false
 try {
     Info 'Checking working tree state.'
     $statusPorcelain = git status --porcelain=v1
+	$criticalPrefixes = @('src/', 'tests/', 'schema/')
+	function Is-CriticalPath([string]$Path, [string[]]$Prefixes) {
+		foreach ($prefix in $Prefixes) {
+			if ($Path.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+				return $true
+			}
+		}
+		return $false
+	}
+
+	$preexistingCritical = New-Object System.Collections.Generic.List[string]
+
+	foreach ($line in $statusPorcelain) {
+		if ([string]::IsNullOrWhiteSpace($line)) {
+			continue
+		}
+
+		$rawPath = $line.Substring(3)
+		$path = ($rawPath -replace '\\', '/').Trim()
+
+		if (Is-CriticalPath $path $criticalPrefixes) {
+			$preexistingCritical.Add($path)
+		}
+	}
+
+	if ($preexistingCritical.Count -gt 0) {
+		Fail "Refusing hook smoke test because critical paths already have local changes: $([string]::Join(', ', ($preexistingCritical | Sort-Object -Unique)))"
+	}
+
     if ($LASTEXITCODE -ne 0) {
         Fail 'Unable to read git status.'
     }
@@ -129,8 +158,13 @@ try {
         Fail 'Block-probe commit unexpectedly succeeded.'
     }
 
-    if (-not ($blockOutput -join "`n" | Select-String 'Refusing commit because untracked critical files exist')) {
-        Fail 'Block-probe commit failed, but not for the expected hook reason.'
+    $blockText = $blockOutput -join "`n"
+
+    if (
+        -not ($blockText | Select-String "Refusing commit") -or
+        -not ($blockText | Select-String "critical")
+    ) {
+        Fail "Block-probe commit failed, but not for the expected hook reason."
     }
 
     Remove-IfExists $srcProbe
